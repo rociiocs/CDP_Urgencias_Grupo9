@@ -13,11 +13,11 @@ public class UIManagerPruebaPathFinding : MonoBehaviour
     {
         personajesEscena = new List<Personaje>();
         personajesEscena.AddRange(FindObjectsOfType<Personaje>());
-        pos1.onClick.AddListener(() => SetDestination(target1.position));
-        pos2.onClick.AddListener(() => SetDestination(target2.position));
-        pos3.onClick.AddListener(() => SetDestination(target3.position));
+        pos1.onClick.AddListener(() => SetDestination(target1));
+        pos2.onClick.AddListener(() => SetDestination(target2));
+        pos3.onClick.AddListener(() => SetDestination(target3));
     }
-    public void SetDestination(Vector3 pos)
+    public void SetDestination(Transform pos)
     {
         foreach(Personaje p in personajesEscena)
         {

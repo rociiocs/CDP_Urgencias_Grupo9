@@ -9,6 +9,7 @@ public class Personaje : MonoBehaviour
     Animator animator;
     bool andando = false;
     float epsilon = 0.05f;
+    Transform target;
 
     void Start()
     {
@@ -17,11 +18,14 @@ public class Personaje : MonoBehaviour
        
     }
 
-    public void GoTo(Vector3 position)
+    public void GoTo(Transform target)
     {
-        myAgent.SetDestination(position);
+        myAgent.Resume();
+        myAgent.SetDestination(target.position);
         animator.SetBool("Walking", true);
-        StartCoroutine(tiempoEspera());
+        //andando = true;
+        this.target = target;
+       StartCoroutine(tiempoEspera());
     }
 
     void Update()
@@ -32,6 +36,7 @@ public class Personaje : MonoBehaviour
             andando = false;
             animator.SetBool("Walking", false);
             myAgent.Stop();
+            transform.rotation = target.rotation;
         }
     }
     private bool AproximadamenteCero(float value){
