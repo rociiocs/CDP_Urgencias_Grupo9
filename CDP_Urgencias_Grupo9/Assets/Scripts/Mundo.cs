@@ -207,7 +207,6 @@ public class Mundo : MonoBehaviour
         ComprobarLibre(listaEsperaMedico, salas.FindAll((s) => s.tipo.Equals(TipoSala.MEDICO)));
         ComprobarLibre(listaEsperaCirugia, salas.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA)));
         ComprobarLibre(listaEsperaEnfermeria, salas.FindAll((s) => s.tipo.Equals(TipoSala.ENFERMERIA)));
-        SalaCirugiaSucia();
         LlamarLimpiadores();
     }
 
@@ -225,7 +224,7 @@ public class Mundo : MonoBehaviour
             }
         }
     }
-    private void SalaCirugiaSucia()
+    public void SalaCirugiaSucia(Sala sala)
     {
         List<Sala> cirugias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
         if (cirugias.Count != 0)

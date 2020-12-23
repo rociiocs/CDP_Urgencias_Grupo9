@@ -5,7 +5,7 @@ using UnityEngine;
 public class Paciente : MonoBehaviour
 {
     private Personaje personaje;
-
+    public Enfermedad enfermedad;
     void Start()
     {
         personaje = GetComponent<Personaje>();
