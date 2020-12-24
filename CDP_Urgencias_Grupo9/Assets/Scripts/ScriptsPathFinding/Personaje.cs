@@ -8,6 +8,7 @@ public class Personaje : MonoBehaviour
     NavMeshAgent myAgent;
     Animator animator;
     bool andando = false;
+    public bool haLlegado = false;
     float epsilon = 0.05f;
     Transform target;
 
@@ -20,6 +21,7 @@ public class Personaje : MonoBehaviour
 
     public void GoTo(Transform target)
     {
+        haLlegado = false;
         myAgent.Resume();
         myAgent.SetDestination(target.position);
         animator.SetBool("Walking", true);
@@ -37,6 +39,7 @@ public class Personaje : MonoBehaviour
             animator.SetBool("Walking", false);
             myAgent.Stop();
             transform.rotation = target.rotation;
+            haLlegado = true;
         }
     }
     private bool AproximadamenteCero(float value){

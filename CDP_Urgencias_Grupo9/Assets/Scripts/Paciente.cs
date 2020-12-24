@@ -6,6 +6,7 @@ public class Paciente : MonoBehaviour
 {
     private Personaje personaje;
     public Enfermedad enfermedad;
+    public bool tieneBote;
     void Start()
     {
         personaje = GetComponent<Personaje>();
