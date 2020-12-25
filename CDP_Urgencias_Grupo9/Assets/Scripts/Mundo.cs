@@ -28,16 +28,16 @@ public enum Paso
 }
 
 
-public class Mundo : MonoBehaviour
+public class Mundo: MonoBehaviour
 {
-   
-    List<Enfermedad> enfermedades = new List<Enfermedad>();
-    List<Sala> salas = new List<Sala>();
-    List<Sala> salasSucias = new List<Sala>();
-    List<Paciente> listaEsperaEnfermeria = new List<Paciente>();
-    List<Paciente> listaEsperaMedico = new List<Paciente>();
-    List<Paciente> listaEsperaCirugia = new List<Paciente>();
-    List<Limpiador> listaLimpiadores = new List<Limpiador>();
+
+    public List<Enfermedad> enfermedades = new List<Enfermedad>();
+    public List<Sala> salas = new List<Sala>();
+    public List<Sala> salasSucias = new List<Sala>();
+    public List<Paciente> listaEsperaEnfermeria = new List<Paciente>();
+    public List<Paciente> listaEsperaMedico = new List<Paciente>();
+    public List<Paciente> listaEsperaCirugia = new List<Paciente>();
+    public List<Limpiador> listaLimpiadores = new List<Limpiador>();
     public List<TargetUrgencias> mostradores;
     private int numEnfermeria = 3, numMedico = 4, numCirugia = 2;
     private int numEnfermeriaP = 6, numMedicoP = 4, numCirugiaP = 2;
@@ -49,14 +49,14 @@ public class Mundo : MonoBehaviour
     public TargetUrgencias[] targetEnfermeria;
     public TargetUrgencias[] targetEnfermeriaPaciente;
     public TargetUrgencias[] asientos;
+    public TargetUrgencias casa;
     private int nMuertes = 0;
 
-    void Start()
+    void Awake()
     {
 
         //Instantiate numPersonajes
-
-
+        
         //Creacion de salas
         int ID = 0;
         for (int i = 0; i < numEnfermeria; i++)

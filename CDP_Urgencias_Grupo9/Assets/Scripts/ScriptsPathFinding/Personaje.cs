@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Personaje : MonoBehaviour
+public class Personaje: MonoBehaviour
 {
     NavMeshAgent myAgent;
     Animator animator;
@@ -12,7 +12,7 @@ public class Personaje : MonoBehaviour
     float epsilon = 0.05f;
     Transform target;
 
-    void Start()
+    void Awake()
     {
         animator = GetComponentInChildren<Animator>();
         myAgent = GetComponent<NavMeshAgent>();
@@ -27,7 +27,7 @@ public class Personaje : MonoBehaviour
         animator.SetBool("Walking", true);
         //andando = true;
         this.target = target;
-       StartCoroutine(tiempoEspera());
+        StartCoroutine(tiempoEspera());
     }
 
     void Update()
