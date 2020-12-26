@@ -26,7 +26,7 @@ public class Cirujano : MonoBehaviour
 
     //Estados
     State casa;
-    State casaIr;
+    State casaFin;
     State irPuestoTrabajo;
     State irCasa;
     State esperarPaciente;
@@ -52,7 +52,7 @@ public class Cirujano : MonoBehaviour
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
         esperarLimpiador = myFSM.CreateState("esperarLimpiador", esperarLimpiadorAction);
-        casaIr = myFSM.CreateState("casaIr", casaIrAction);
+        casaFin = myFSM.CreateState("casaFin", casaFinAction);
 
         //Create perceptions
         //Si hay un paciente delante
@@ -83,7 +83,7 @@ public class Cirujano : MonoBehaviour
         myFSM.CreateTransition("llamado limpiador", llamarLimpiador, llamadoLimpiador, esperarLimpiador);
         myFSM.CreateTransition("sala limpia", esperarLimpiador, salaLimpia, esperarPaciente);
         myFSM.CreateTransition("terminada jornada", esperarPaciente, terminadaJornada, irCasa);
-        myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casaIr);
+        myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casaFin);
 
     }
 
@@ -123,6 +123,12 @@ public class Cirujano : MonoBehaviour
             if (!sala.sucio)
             {
                 myFSM.Fire("sala limpia");
+            }
+        }else if (myFSM.GetCurrentState().Name.Equals(irCasa.Name))
+        {
+            if (personaje.haLlegado)
+            {
+                myFSM.Fire("llegada casa");
             }
         }
     }
@@ -181,8 +187,8 @@ public class Cirujano : MonoBehaviour
         
     }
 
-    public void casaIrAction()
+    public void casaFinAction()
     {
-        Destroy(this);
+        Destroy(this.gameObject);
     }
 }

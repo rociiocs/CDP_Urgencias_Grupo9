@@ -34,6 +34,7 @@ public class Mundo: MonoBehaviour
     public List<Enfermedad> enfermedades = new List<Enfermedad>();
     public List<Sala> salas = new List<Sala>();
     public List<Sala> salasSucias = new List<Sala>();
+    public List<Sala> cirugiasSucias = new List<Sala>();
     public List<Paciente> listaEsperaEnfermeria = new List<Paciente>();
     public List<Paciente> listaEsperaMedico = new List<Paciente>();
     public List<Paciente> listaEsperaCirugia = new List<Paciente>();
@@ -48,6 +49,7 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetCirujanoPaciente;
     public TargetUrgencias[] targetEnfermeria;
     public TargetUrgencias[] targetEnfermeriaPaciente;
+    public TargetUrgencias[] targetLimpiadores;
     public TargetUrgencias[] asientos;
     public TargetUrgencias casa;
     private int nMuertes = 0;
@@ -226,8 +228,8 @@ public class Mundo: MonoBehaviour
     }
     public void SalaCirugiaSucia(Sala sala)
     {
-        List<Sala> cirugias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
-        if (cirugias.Count != 0)
+        cirugiasSucias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
+        if (cirugiasSucias.Count != 0)
         {
             //llamar limpiador
         }
