@@ -18,8 +18,9 @@ public class Sala
     public bool libre;
     public bool sucio;
     public bool heLlamadoAlMundo;
-    public Transform posicionPaciente;
-    public Transform posicionProfesional;
+    public TargetUrgencias posicionPaciente;
+    public TargetUrgencias posicionProfesional;
+    public TargetUrgencias posicionLimpiador;
     //private float limiteSuciedad = 100;
     //private float umbral = 65;
     // private float speedSuciedad= 0.01;

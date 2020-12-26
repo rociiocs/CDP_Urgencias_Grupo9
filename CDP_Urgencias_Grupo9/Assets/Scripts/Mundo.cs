@@ -42,7 +42,7 @@ public class Mundo: MonoBehaviour
     public List<TargetUrgencias> mostradores;
     private int numEnfermeria = 3, numMedico = 4, numCirugia = 2;
     private int numEnfermeriaP = 6, numMedicoP = 4, numCirugiaP = 2;
-    private float umbral= 65, speedSuciedad=0.01f, limitePorcentaje = 100;
+    public float umbral= 65, speedSuciedad=0.01f, limitePorcentaje = 100;
     public TargetUrgencias[] targetMedico;
     public TargetUrgencias[] targetMedicoPaciente;
     public TargetUrgencias[] targetCirujano;
@@ -50,9 +50,11 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetEnfermeria;
     public TargetUrgencias[] targetEnfermeriaPaciente;
     public TargetUrgencias[] targetLimpiadores;
+    public TargetUrgencias[] targetLimpiadoresSala;
     public TargetUrgencias[] asientos;
     public TargetUrgencias casa;
     private int nMuertes = 0;
+    public bool ponerSalaSucia = false;
 
     void Awake()
     {
@@ -64,8 +66,10 @@ public class Mundo: MonoBehaviour
         for (int i = 0; i < numEnfermeria; i++)
         {
             Sala nueva = new Sala(TipoSala.ENFERMERIA, ID);
-            nueva.posicionPaciente = targetEnfermeriaPaciente[i].transform;
-            nueva.posicionProfesional = targetEnfermeria[i].transform;
+            //Esto se debería hacer dos veces
+            nueva.posicionPaciente = targetEnfermeriaPaciente[i];
+            nueva.posicionProfesional = targetEnfermeria[i];
+            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
             salas.Add(nueva);
 
             ID++;
@@ -73,8 +77,9 @@ public class Mundo: MonoBehaviour
         for (int i = 0; i < numCirugia; i++)
         {
             Sala nueva = new Sala(TipoSala.CIRUGIA, ID);
-            nueva.posicionPaciente = targetCirujanoPaciente[i].transform;
-            nueva.posicionProfesional = targetCirujano[i].transform;
+            nueva.posicionPaciente = targetCirujanoPaciente[i];
+            nueva.posicionProfesional = targetCirujano[i];
+            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
             salas.Add(nueva);
       
             ID++;
@@ -82,13 +87,16 @@ public class Mundo: MonoBehaviour
         for (int i = 0; i <numMedico; i++)
         {
             Sala nueva = new Sala(TipoSala.MEDICO, ID);
-            nueva.posicionPaciente = targetMedicoPaciente[i].transform;
-            nueva.posicionProfesional = targetMedico[i].transform;
+            nueva.posicionPaciente = targetMedicoPaciente[i];
+            nueva.posicionProfesional = targetMedico[i];
+            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
             salas.Add(nueva);
       
             ID++;
         }
+
         Sala espera = new Sala(TipoSala.ESPERA, ID);
+        espera.posicionLimpiador = targetLimpiadoresSala[ID];
         salas.Add(espera);
 
 
@@ -210,6 +218,13 @@ public class Mundo: MonoBehaviour
         ComprobarLibre(listaEsperaCirugia, salas.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA)));
         ComprobarLibre(listaEsperaEnfermeria, salas.FindAll((s) => s.tipo.Equals(TipoSala.ENFERMERIA)));
         LlamarLimpiadores();
+
+        if (ponerSalaSucia)
+        {
+            ponerSalaSucia = false;
+            salas[0].porcentajeSuciedad = 80;
+            salas[0].libre = false;
+        }
     }
 
     private void LlamarLimpiadores()
@@ -226,12 +241,31 @@ public class Mundo: MonoBehaviour
             }
         }
     }
+    public void AddSalaSucia(Sala sala)
+    {
+        salasSucias.Add(sala);
+    }
     public void SalaCirugiaSucia(Sala sala)
     {
         cirugiasSucias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
         if (cirugiasSucias.Count != 0)
         {
-            //llamar limpiador
+            for(int i = 0; i < targetLimpiadores.Length; i++)
+            {
+                if (!targetLimpiadores[i].libre)
+                {
+                    return;
+                }
+            }
+
+            for(int i = 0; i < listaLimpiadores.Count; i++)
+            {
+                if(listaLimpiadores[i].salaLimpiando.tipo != TipoSala.CIRUGIA)
+                {
+                    listaLimpiadores[i].limpiarQuirofanoUrgente();
+                }
+            }
+
         }
     }
     private void ComprobarLibre(List<Paciente> listaEspera, List<Sala> salas)
@@ -244,7 +278,7 @@ public class Mundo: MonoBehaviour
                 {
                    Paciente llamado= listaEspera[0];
                    listaEspera.RemoveAt(0);
-                   llamado.GoTo(s.posicionPaciente);
+                   llamado.GoTo(s.posicionPaciente.transform);
                 }
             }
         }

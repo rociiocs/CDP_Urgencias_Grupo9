@@ -14,8 +14,9 @@ public class Cirujano : MonoBehaviour
     TargetUrgencias targetUrgencias;
     TargetUrgencias targetPaciente;
     List<Sala> quirofanos;
+
     public Image emoticono;
-    public Sprite emoOperacion,emoExaminar,emoCasa;
+    public Sprite emoOperacion,emoExaminar,emoCasa,emoSucio,emoEsperarPaciente;
 
     Sala sala;
     Paciente paciente;
@@ -37,42 +38,41 @@ public class Cirujano : MonoBehaviour
 
     void Start()
     {
-        
         mundo = GetComponentInParent<Mundo>();
         personaje = GetComponent<Personaje>();
         quirofanos = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
         myFSM = new StateMachineEngine();
 
         //Create states
-        casa = myFSM.CreateEntryState("casa", casaAction);
+        casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", esperarPacienteAction);
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
-        esperarLimpiador = myFSM.CreateState("esperarLimpiador", esperarLimpiadorAction);
-        casaFin = myFSM.CreateState("casaFin", casaFinAction);
+        esperarLimpiador = myFSM.CreateState("esperarLimpiador", ()=> PutEmoji(emoSucio));
+        casaFin = myFSM.CreateState("casaFin", () => Destroy(this.gameObject));
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<WatchingPerception>(); //Mirar
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Mirar
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si termina el tiempo de operar
         Perception terminarOperar = myFSM.CreatePerception<TimerPerception>(timeOperar);
         //Si el puesto de trabajo está libre, ir hacia el
         Perception comienzaJornada = myFSM.CreatePerception<PushPerception>();
-        //Cuando termina de examinar a un paciente, con un timer,
+        //Cuando termina de examinar a un paciente, con un timer
         Perception terminarExaminar = myFSM.CreatePerception<TimerPerception>(timeExaminar);
         //El limpiador debe llamar a esta función con un Push
         Perception llamadoLimpiador = myFSM.CreatePerception<PushPerception>();
-        //El limpiador debe llamar a esta función con un Push
-        Perception salaLimpia = myFSM.CreatePerception<PushPerception>(); 
-        //Se da la percepción desde el update, comprobando si está en la posición correcta
-        Perception llegadaCasa = myFSM.CreatePerception<PushPerception>();
-        //Se da la percepción desde el update, comprobando si está en la posición correcta
-        Perception llegadaPuesto = myFSM.CreatePerception<PushPerception>();
+        //El cirujano comprueba si la sala está sucia
+        Perception salaLimpia = myFSM.CreatePerception<ValuePerception>(() => !sala.sucio); 
+        //Si el personaje ha llegado a la casa
+        Perception llegadaCasa = myFSM.CreatePerception<ValuePerception>(() => personaje.haLlegado);
+        //Si el personaje llega  al puesto de trabajo
+        Perception llegadaPuesto = myFSM.CreatePerception<ValuePerception>(()=> personaje.haLlegado);
 
         //Create transitions
         myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, irPuestoTrabajo);
@@ -94,50 +94,30 @@ public class Cirujano : MonoBehaviour
         if (myFSM.GetCurrentState().Name.Equals(casa.Name))
         {
             //Si el puesto de trabajo está libre
-            for (int i = 0; i < mundo.targetCirujano.Length; i++)
+            for (int i = 0; i < quirofanos.Count; i++)
             {
-                if (mundo.targetCirujano[i].libre)
+                if (quirofanos[i].libre)
                 {
-                    targetUrgencias = mundo.targetCirujano[i];
-                    targetPaciente = mundo.targetCirujanoPaciente[i];
                     sala = quirofanos[i];
+                    targetUrgencias = sala.posicionProfesional;
+                    targetPaciente = sala.posicionProfesional;
                     myFSM.Fire("comienza jornada");
                     return;
                 }
             }
-        }else if (myFSM.GetCurrentState().Name.Equals(irPuestoTrabajo.Name))
-        {
-            if (personaje.haLlegado)
-            {
-                myFSM.Fire("llegar puesto trabajo");
-            }
-        }else if (myFSM.GetCurrentState().Name.Equals(esperarPaciente.Name))
-        {
-            //Booleano que pone el paciente
-            if (targetPaciente.ocupado)
-            {
-                myFSM.Fire("llega paciente");
-            }
-        }else if (myFSM.GetCurrentState().Name.Equals(esperarLimpiador.Name))
-        {
-            if (!sala.sucio)
-            {
-                myFSM.Fire("sala limpia");
-            }
-        }else if (myFSM.GetCurrentState().Name.Equals(irCasa.Name))
-        {
-            if (personaje.haLlegado)
-            {
-                myFSM.Fire("llegada casa");
-            }
         }
+    }
+
+    private void PutEmoji(Sprite emoji)
+    {
+        emoticono.sprite = emoji;
     }
 
     private void irPuestoTrabajoAction()
     {
         //Nav Mesh ir al target puesto
-        
         targetUrgencias.libre = false;
+        sala.libre = false;
         personaje.GoTo(targetUrgencias.transform);
     }
 
@@ -145,14 +125,9 @@ public class Cirujano : MonoBehaviour
     {
         //Go to target casa
         targetUrgencias.libre = true;
+        sala.libre = true;
         personaje.GoTo(mundo.casa.transform);
-        emoticono.sprite = emoCasa;
-
-    }
-
-    private void esperarPacienteAction()
-    {
-        //Si hay paciente
+        PutEmoji(emoCasa);
 
     }
 
@@ -161,19 +136,13 @@ public class Cirujano : MonoBehaviour
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;
         //Do animacion examinar
-        emoticono.sprite = emoExaminar;
+        PutEmoji(emoExaminar);
     }
 
     private void operandoPacienteAction()
     {
         //Do animacion operar
-         emoticono.sprite = emoOperacion;
-        
-    }
-
-    private void esperarLimpiadorAction()
-    {
-        //El limpiador debe poner push cuando termine de limpiar
+        PutEmoji(emoOperacion);
     }
 
     private void llamarLimpiadorAction()
@@ -182,13 +151,5 @@ public class Cirujano : MonoBehaviour
         myFSM.Fire("llamado limpiador");
     }
 
-    private void casaAction()
-    {
-        
-    }
 
-    public void casaFinAction()
-    {
-        Destroy(this.gameObject);
-    }
 }
