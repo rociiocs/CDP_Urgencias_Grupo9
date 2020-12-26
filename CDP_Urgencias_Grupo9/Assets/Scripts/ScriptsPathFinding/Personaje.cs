@@ -5,6 +5,7 @@ using UnityEngine.AI;
 
 public class Personaje: MonoBehaviour
 {
+    public string nombre;// para el dropdown de la camara
     NavMeshAgent myAgent;
     Animator animator;
     bool andando = false;
@@ -16,7 +17,10 @@ public class Personaje: MonoBehaviour
     {
         animator = GetComponentInChildren<Animator>();
         myAgent = GetComponent<NavMeshAgent>();
-       
+        if (nombre.Equals(""))
+        {
+            nombre = "Unknown";
+        }
     }
 
     public void GoTo(Transform target)

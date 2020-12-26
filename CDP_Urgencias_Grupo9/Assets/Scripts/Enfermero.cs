@@ -12,16 +12,18 @@ public enum Analisis
     SUERO,
     SANGRE
 }
+
 //Meter en la memoria los estados de suero y lo que falte
 //Ademas el estado examinar, que aunque sea rápido, se necesita
 
 //quizas hay que cambiar el analisis de orina y hacer un estado más: esperando orina
 //revisar
+//null despues de enviar a baño
 public class Enfermero : MonoBehaviour
 {
     //info
     StateMachineEngine myFSM;
-    float timeJornada, timeAnimacionAtender;
+    float timeJornada= 20, timeAnimacionAtender=3;
     public bool llevarLabFlag = false, jornadaFlag= false;
     Analisis currentAnalisis;
     //Referencias
@@ -29,24 +31,26 @@ public class Enfermero : MonoBehaviour
     public TargetUrgencias salidaCasa;
     public TargetUrgencias laboratorioTarget;
     public Image emoticono;
-    public Sprite emoEsperando, emoCasa, emoSangre,emoBote, emoOrina, emoPCR, emoLAB,emoSuero;
-    Paciente currentPaciente;
+    public Sprite emoEsperando, emoCasa, emoSangre,emoBote, emoOrina, emoPCR, emoLAB,emoSuero, emoEsperandoOrina;
+    public Paciente currentPaciente;
     Personaje myMovement;
-    
+  
 
     void Start()
     {
         myMovement = GetComponent<Personaje>();
+  
         CreacionEstados();
     }
     private void CreacionEstados()
     {
+
         myFSM = new StateMachineEngine();
-        State enCasa = myFSM.CreateEntryState("casa");
-        State yendoPuesto = myFSM.CreateState("irPuestoTrabajo", () => myMovement.GoTo(puestoTrabajo.transform));
-        State yendoCasa = myFSM.CreateState("irCasa", () => { PutEmoji(emoCasa); myMovement.GoTo(salidaCasa.transform); });
-        State esperando = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperando); DespacharPaciente(); });// idle
-        State analisisSangre = myFSM.CreateState("analisisSangre",()=>Atender(emoSangre));//animacion y emoticonillo
+        State enCasa = myFSM.CreateEntryState("casa" );
+        State yendoPuesto = myFSM.CreateState("irPuestoTrabajo", () => { myMovement.GoTo(puestoTrabajo.transform); jornadaFlag = false; });
+        State yendoCasa = myFSM.CreateState("irCasa", () => { PutEmoji(emoCasa);  myMovement.GoTo(salidaCasa.transform); });
+        State esperando = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperando); DespacharPaciente();  });// idle
+        State analisisSangre = myFSM.CreateState("analisisSangre",()=> { Atender(emoSangre);  });//animacion y emoticonillo
         State analisisOrina = myFSM.CreateState("analisisOrina",()=>Atender(emoOrina));//animacion y emoticonillo
         State analisisPCR = myFSM.CreateState("analisisPCR",()=>Atender(emoPCR)); //animacion y emoticonillo
         State suero = myFSM.CreateState("meterSuero",()=>Atender(emoSuero));//animacion y emoticonillo;
@@ -56,7 +60,7 @@ public class Enfermero : MonoBehaviour
         State esperandoPacienteBanho = myFSM.CreateState("esperarBanho", () => PacienteABaño());
 
 
-        Perception pacienteAtender = myFSM.CreatePerception<WatchingPerception>(); //Mirar
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => currentPaciente != null); //Mirar
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         Perception hayAnalisisSangre = myFSM.CreatePerception<ValuePerception>(()=>currentAnalisis.Equals(Analisis.SANGRE));
         Perception hayAnalisisPCR = myFSM.CreatePerception<ValuePerception>(() => currentAnalisis.Equals(Analisis.PCR));
@@ -97,6 +101,7 @@ public class Enfermero : MonoBehaviour
     private void Atender(Sprite emoji)
     {
         PutEmoji(emoji);
+        currentPaciente = null;// mirar
         // animacion 
     }
     private void PutEmoji(Sprite emoji)
@@ -105,7 +110,7 @@ public class Enfermero : MonoBehaviour
     }
     private void PacienteABaño()
     {
-
+        PutEmoji(emoEsperandoOrina);
     }
     private void ExaminarPaciente()
     {
@@ -156,6 +161,10 @@ public class Enfermero : MonoBehaviour
       
   
 
+    }
+    private void Update()
+    {
+        myFSM.Update();
     }
 
 }
