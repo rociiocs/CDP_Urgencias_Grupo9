@@ -1,17 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Celador : MonoBehaviour
 {
     //Variables
-    float velGiro;
-    float velMovement;
-    int timeJornada = 2000;
+    public int timeJornada = 2000;
     int timeAtender = 5;
     int timeTurno = 1000;
     public bool turnoSala;
-    Vector3 puestoTrabajo;
+
+    Personaje personaje;
+    TargetUrgencias targetUrgencias;
+    TargetUrgencias targetPaciente;
+    List<Sala> puestos;
+
+    public Image emoticono;
+    public Sprite emoExaminar, emoCasa, emoEsperarPaciente;
+
     Sala sala;
     Paciente paciente;
     Enfermedad enfermedad;
@@ -28,45 +35,50 @@ public class Celador : MonoBehaviour
     State esperandoCompañero;
     State atendiendoUrgente;
     State paseandoSala;
+    State casaFin;
 
     // Start is called before the first frame update
     void Start()
     {
         myFSM = new StateMachineEngine();
+        mundo = GetComponentInParent<Mundo>();
+        personaje = GetComponent<Personaje>();
+        puestos = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.ESPERA));
 
         //Create states
-        casa = myFSM.CreateEntryState("casa", casaAction);
-        irPuestoTrabajo = myFSM.CreateEntryState("irPuestoTrabajo", irPuestoTrabajoAction);//Se emplea no solo al llegar sino para cambiar de turno
+        casa = myFSM.CreateEntryState("casa");
+        irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);//Se emplea no solo al llegar sino para cambiar de turno
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", esperarPacienteAction);
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
         atendiendoPaciente = myFSM.CreateState("atendiendoPaciente", atendiendoPacienteAction);
         esperandoCompañero = myFSM.CreateState("esperandoCompañero", esperandoCompañeroAction); ;
         atendiendoUrgente = myFSM.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
-        paseandoSala = myFSM.CreateState("paseandoSala", paseandoSalaAction);
+        paseandoSala = myFSM.CreateState("paseandoSala", () => PutEmoji(emoEsperarPaciente));
+        casaFin = myFSM.CreateState("casaFin", () => Destroy(this.gameObject));
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<WatchingPerception>(); //Mirar
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Mirar
         //Si hay un paciente urgente que atender
-        Perception urgenteAtender = myFSM.CreatePerception<WatchingPerception>(); //Mirar
+        Perception urgenteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Necesito un tipo de target para los urgentes
         //Si se produce cambio de turno
         Perception cambioTurno = myFSM.CreatePerception<TimerPerception>(timeTurno);
         //Si hay un puesto libre donde voy a cambiar
-        Perception huecoLibre = myFSM.CreatePerception<WatchingPerception>();
+        Perception huecoLibre = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado);//Un target de la sala o del mostrador
         //Si hay un puesto libre y voy a cambiar de turno 
-        Perception huecoYTurno = myFSM.CreatePerception<ValuePerception>();
+        Perception huecoYTurno = myFSM.CreatePerception<ValuePerception>();// () => (targetPaciente.ocupado&&cambioTurno));
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si el puesto de trabajo está libre, ir hacia él
-        Perception comienzaJornada = myFSM.CreatePerception<ValuePerception>();
+        Perception comienzaJornada = myFSM.CreatePerception<PushPerception>();
         //Cuando termina de examinar a un paciente, con un timer,
         Perception terminarAtender = myFSM.CreatePerception<TimerPerception>(timeAtender);//puede que sea value si se usa animación
         //Cuando termina de examinar a un paciente, con un timer,
         Perception terminarUrgente = myFSM.CreatePerception<TimerPerception>(timeAtender);//se usa el mismo timer para atender en mostrador y en sala, dependerá de la animación
         //Se da la percepción desde el update, comprobando si está en la posición correcta
-        Perception llegadaCasa = myFSM.CreatePerception<PushPerception>();
+        Perception llegadaCasa = myFSM.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         //Se da la percepción desde el update, comprobando si está en la posición correcta
-        Perception llegadaPuesto = myFSM.CreatePerception<PushPerception>();
+        Perception llegadaPuesto = myFSM.CreatePerception<ValuePerception>(() => personaje.haLlegado);
 
         //Create transitions
         myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, irPuestoTrabajo);
@@ -81,41 +93,51 @@ public class Celador : MonoBehaviour
         myFSM.CreateTransition("cambio directoMS", esperarPaciente, huecoYTurno, paseandoSala);//No se si hay alguna forma de hacerlo bidireccional
         myFSM.CreateTransition("cambio directoSM", paseandoSala, huecoYTurno, esperarPaciente);
         myFSM.CreateTransition("terminada jornada", esperarPaciente, terminadaJornada, irCasa);
-        myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casa);
+        myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casaFin);
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        myFSM.Update();
+        if (myFSM.GetCurrentState().Name.Equals(casa.Name))
+        {
+            //Si el puesto de trabajo está libre
+            //Habría que distinguir de alguna forma los puestos de mostrador y de sala
+            for (int i = 0; i < puestos.Count; i++)
+            {
+                if (puestos[i].libre)
+                {
+                    sala = puestos[i];
+                    targetUrgencias = sala.posicionProfesional;
+                    targetPaciente = sala.posicionProfesional;
+                    myFSM.Fire("comienza jornada");
+                    return;
+                }
+            }
+        }
+    }
+    private void PutEmoji(Sprite emoji)
+    {
+        emoticono.sprite = emoji;
     }
     private void irPuestoTrabajoAction()
     {
         //Nav Mesh ir al target puesto
-        myFSM.Fire("llegar puesto trabajo");
+        targetUrgencias.libre = false;
+        sala.libre = false;
+        personaje.GoTo(targetUrgencias.transform);
     }
 
     private void irCasaAction()
     {
-        //Go to target casa
-        myFSM.Fire("llegada casa");
+        targetUrgencias.libre = true;
+        sala.libre = true;
+        personaje.GoTo(mundo.casa.transform);
+        PutEmoji(emoCasa);
     }
 
-    private void esperarPacienteAction()
-    {
-        //Si hay paciente
-        myFSM.Fire("llega paciente");
-        //Si acaba la jornada
-        myFSM.Fire("terminada jornada");
-    }
-    private void paseandoSalaAction()
-    {
-        //Si hay urgente
-        myFSM.Fire("llega urgente");
-        //Si acaba la jornada
-        myFSM.Fire("terminada jornada");
-    }
     private void esperandoCompañeroAction()
     {
         //Si hay hueco libre
@@ -136,10 +158,5 @@ public class Celador : MonoBehaviour
         enfermedad = paciente.enfermedad;
         //Do animacion examinar/esperar fin timer
         myFSM.Fire("urgente completada");
-    }
-    private void casaAction()
-    {
-        //Si el puesto de trabajo está libre
-        myFSM.Fire("comienza jornada");
     }
 }
