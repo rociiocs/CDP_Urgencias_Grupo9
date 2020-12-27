@@ -99,10 +99,11 @@ public class Limpiador : MonoBehaviour
         myFSM.Update();
         if (myFSM.GetCurrentState().Name.Equals(consultandoPantalla.Name))
         {
+            
             if(mundo.cirugiasSucias.Count > 0)
             {
                 salaLimpiando = mundo.cirugiasSucias[0];
-                mundo.cirugiasSucias.Remove(salaLimpiando);
+                mundo.salasSucias.Remove(salaLimpiando);
                 targetUrgencias.libre = true;
                 targetUrgencias = salaLimpiando.posicionLimpiador;
                 myFSM.Fire("hay quirofano limpiar");
@@ -122,6 +123,7 @@ public class Limpiador : MonoBehaviour
             {
                 if (mundo.targetLimpiadores[targetUrgenciasID - 1].libre)
                 {
+                    targetUrgencias.libre = true;
                     targetUrgenciasID--;
                     targetUrgencias = mundo.targetLimpiadores[targetUrgenciasID];
                     targetUrgencias.libre = false;
@@ -131,10 +133,11 @@ public class Limpiador : MonoBehaviour
             
         }else if (myFSM.GetCurrentState().Name.Equals(limpiandoQuirofano.Name) || myFSM.GetCurrentState().Name.Equals(limpiandoSala.Name))
         {
-            salaLimpiando.porcentajeSuciedad--;
+            salaLimpiando.porcentajeSuciedad = salaLimpiando.porcentajeSuciedad - 0.5f;
             if (salaLimpiando.porcentajeSuciedad < mundo.umbral)
             {
                 salaLimpiando.sucio = false;
+                salaLimpiando.heLlamadoAlMundo = false;
             }
         }
     }
@@ -168,14 +171,14 @@ public class Limpiador : MonoBehaviour
 
     public void limpiarQuirofanoUrgente()
     {
-        salaLimpiando = mundo.cirugiasSucias[0];
-        mundo.cirugiasSucias.Remove(salaLimpiando);
-        targetUrgencias = salaLimpiando.posicionLimpiador;
         //Si la sala que estoy limpiando esta sucia, añadirla a la lista
         if (salaLimpiando.sucio)
         {
             mundo.AddSalaSucia(salaLimpiando);
         }
+        salaLimpiando = mundo.cirugiasSucias[0];
+        mundo.salasSucias.Remove(salaLimpiando);
+        targetUrgencias = salaLimpiando.posicionLimpiador;
         myFSM.Fire("hay quirofano urgente");
     }
 

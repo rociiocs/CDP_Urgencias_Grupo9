@@ -17,6 +17,7 @@ public class Cirujano : MonoBehaviour
 
     public Image emoticono;
     public Sprite emoOperacion,emoExaminar,emoCasa,emoSucio,emoEsperarPaciente;
+    //public bool ponerQuirofanoSucio = false;
 
     Sala sala;
     Paciente paciente;
@@ -106,6 +107,13 @@ public class Cirujano : MonoBehaviour
                 }
             }
         }
+        /*
+        if (ponerQuirofanoSucio)
+        {
+            ponerQuirofanoSucio = false;
+            mundo.SalaCirugiaSucia(sala);
+        }
+        */
     }
 
     private void PutEmoji(Sprite emoji)

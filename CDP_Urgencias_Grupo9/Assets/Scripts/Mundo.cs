@@ -54,7 +54,8 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] asientos;
     public TargetUrgencias casa;
     private int nMuertes = 0;
-    public bool ponerSalaSucia = false;
+    //public bool ponerSalaSucia = false;
+
 
     void Awake()
     {
@@ -214,17 +215,41 @@ public class Mundo: MonoBehaviour
             }
         }
 
+        cirugiasSucias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
+        if (cirugiasSucias.Count != 0)
+        {
+            for (int i = 0; i < targetLimpiadores.Length; i++)
+            {
+                if (!targetLimpiadores[i].libre)
+                {
+                    return;
+                }
+            }
+
+            for (int i = 0; i < listaLimpiadores.Count; i++)
+            {
+                if (listaLimpiadores[i].salaLimpiando.tipo != TipoSala.CIRUGIA)
+                {
+                    listaLimpiadores[i].limpiarQuirofanoUrgente();
+                    break;
+                }
+            }
+        }
+
         ComprobarLibre(listaEsperaMedico, salas.FindAll((s) => s.tipo.Equals(TipoSala.MEDICO)));
         ComprobarLibre(listaEsperaCirugia, salas.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA)));
         ComprobarLibre(listaEsperaEnfermeria, salas.FindAll((s) => s.tipo.Equals(TipoSala.ENFERMERIA)));
         LlamarLimpiadores();
-
+        /*
         if (ponerSalaSucia)
         {
             ponerSalaSucia = false;
             salas[0].porcentajeSuciedad = 80;
             salas[0].libre = false;
+            salas[1].porcentajeSuciedad = 80;
+            salas[1].libre = false;
         }
+        */
     }
 
     private void LlamarLimpiadores()
@@ -247,26 +272,9 @@ public class Mundo: MonoBehaviour
     }
     public void SalaCirugiaSucia(Sala sala)
     {
-        cirugiasSucias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
-        if (cirugiasSucias.Count != 0)
-        {
-            for(int i = 0; i < targetLimpiadores.Length; i++)
-            {
-                if (!targetLimpiadores[i].libre)
-                {
-                    return;
-                }
-            }
-
-            for(int i = 0; i < listaLimpiadores.Count; i++)
-            {
-                if(listaLimpiadores[i].salaLimpiando.tipo != TipoSala.CIRUGIA)
-                {
-                    listaLimpiadores[i].limpiarQuirofanoUrgente();
-                }
-            }
-
-        }
+        sala.sucio = true;
+        sala.porcentajeSuciedad = 100;
+        
     }
     private void ComprobarLibre(List<Paciente> listaEspera, List<Sala> salas)
     {

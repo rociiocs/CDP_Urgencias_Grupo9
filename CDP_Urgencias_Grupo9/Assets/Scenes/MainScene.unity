@@ -944,6 +944,24 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 95905670}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &96545897 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+    type: 3}
+  m_PrefabInstance: {fileID: 2106017678}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &96545900 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1927998007601731261, guid: 48a49694c9d0ded498d294252f4e75d8,
+    type: 3}
+  m_PrefabInstance: {fileID: 2106017678}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3225f27199c503844b8ca3fa80418a70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &114919491
 GameObject:
   m_ObjectHideFlags: 0
@@ -976,7 +994,9 @@ MonoBehaviour:
   listaEsperaEnfermeria: []
   listaEsperaMedico: []
   listaEsperaCirugia: []
-  listaLimpiadores: []
+  listaLimpiadores:
+  - {fileID: 1507623250}
+  - {fileID: 96545900}
   mostradores:
   - {fileID: 280865152}
   - {fileID: 425352808}
@@ -1039,7 +1059,6 @@ MonoBehaviour:
   - {fileID: 720090312}
   - {fileID: 1217600881}
   casa: {fileID: 274072048}
-  ponerSalaSucia: 0
 --- !u!4 &114919493
 Transform:
   m_ObjectHideFlags: 0
@@ -1054,6 +1073,7 @@ Transform:
   - {fileID: 2531154297680030940}
   - {fileID: 1910276677}
   - {fileID: 5006512736419983298}
+  - {fileID: 96545897}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5099,6 +5119,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: cc1d9f7f2ba9bf945b37c8c588bcbe33,
         type: 3}
+    - target: {fileID: 1192566849015772330, guid: be3c710c4b1111945bb3b691d7afcbf4,
+        type: 3}
+      propertyPath: timeJornada
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 6194259240351439084, guid: be3c710c4b1111945bb3b691d7afcbf4,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -12260,6 +12285,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   libre: 1
   ocupado: 0
+--- !u!114 &1507623250 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1927998007601731261, guid: 48a49694c9d0ded498d294252f4e75d8,
+    type: 3}
+  m_PrefabInstance: {fileID: 1927998009209164391}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3225f27199c503844b8ca3fa80418a70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1507957820
 GameObject:
   m_ObjectHideFlags: 0
@@ -16100,6 +16137,85 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2085421340}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2106017678
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 114919493}
+    m_Modifications:
+    - target: {fileID: 1927998007601731261, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: timeJornada
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.1245003
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.95339966
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.9925108
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7629224141682134966, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_Name
+      value: Limpiador (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7629224141682134966, guid: 48a49694c9d0ded498d294252f4e75d8,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 48a49694c9d0ded498d294252f4e75d8, type: 3}
 --- !u!1 &2110571189
 GameObject:
   m_ObjectHideFlags: 0
@@ -18036,7 +18152,7 @@ PrefabInstance:
     - target: {fileID: 1927998007601731261, guid: 48a49694c9d0ded498d294252f4e75d8,
         type: 3}
       propertyPath: timeJornada
-      value: 9
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6898154771943439781, guid: 48a49694c9d0ded498d294252f4e75d8,
         type: 3}
