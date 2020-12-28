@@ -17,7 +17,7 @@ public class Celador : MonoBehaviour
     List<Sala> puestos;
 
     public Image emoticono;
-    public Sprite emoExaminar, emoCasa, emoEsperarPaciente;
+    public Sprite emoAtender, emoCasa, emoEsperarPaciente;
 
     Sala sala;
     Paciente paciente;
@@ -64,9 +64,9 @@ public class Celador : MonoBehaviour
         //Si se produce cambio de turno
         Perception cambioTurno = myFSM.CreatePerception<TimerPerception>(timeTurno);
         //Si hay un puesto libre donde voy a cambiar
-        Perception huecoLibre = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado);//Un target de la sala o del mostrador
+        Perception huecoLibre = myFSM.CreatePerception<PushPerception>();//Un target de la sala o del mostrador
         //Si hay un puesto libre y voy a cambiar de turno 
-        Perception huecoYTurno = myFSM.CreatePerception<ValuePerception>();// () => (targetPaciente.ocupado&&cambioTurno));
+        Perception huecoYTurno = myFSM.CreatePerception<PushPerception>();// () => (targetPaciente.ocupado&&cambioTurno));
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si el puesto de trabajo está libre, ir hacia él
@@ -140,8 +140,6 @@ public class Celador : MonoBehaviour
 
     private void esperandoCompañeroAction()
     {
-        //Si hay hueco libre
-        myFSM.Fire("hueco libre");
         //cambio el tipo de turno
         turnoSala = !turnoSala;
     }
@@ -149,14 +147,12 @@ public class Celador : MonoBehaviour
     {
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;
-        //Do animacion examinar/esperar fin timer
-        myFSM.Fire("atencion completada");
+        PutEmoji(emoAtender);
     }
     private void atendiendoUrgenteAction()
     {
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;
-        //Do animacion examinar/esperar fin timer
-        myFSM.Fire("urgente completada");
+        PutEmoji(emoAtender);
     }
 }
