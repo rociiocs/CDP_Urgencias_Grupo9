@@ -111,7 +111,7 @@ public class Celador : MonoBehaviour
                 {
                     sala = puestos[i];
                     targetUrgencias = sala.posicionProfesional;
-                    targetPaciente = sala.posicionProfesional;
+                    targetPaciente = sala.posicionPaciente;
                     myFSM.Fire("comienza jornada");
                     return;
                 }

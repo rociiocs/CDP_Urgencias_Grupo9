@@ -92,7 +92,7 @@ public class Medico : MonoBehaviour
                 {
                     sala = oficinas[i];
                     targetUrgencias = sala.posicionProfesional;
-                    targetPaciente = sala.posicionProfesional;
+                    targetPaciente = sala.posicionPaciente;
                     myFSM.Fire("comienza jornada");
                     return;
                 }

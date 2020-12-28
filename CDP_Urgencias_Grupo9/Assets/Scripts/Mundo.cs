@@ -51,6 +51,8 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetEnfermeriaPaciente;
     public TargetUrgencias[] targetLimpiadores;
     public TargetUrgencias[] targetLimpiadoresSala;
+    public TargetUrgencias[] targetEspera;
+    public TargetUrgencias[] targetEsperaPaciente;
     public TargetUrgencias[] asientos;
     public TargetUrgencias casa;
     private int nMuertes = 0;
@@ -97,7 +99,9 @@ public class Mundo: MonoBehaviour
         }
 
         Sala espera = new Sala(TipoSala.ESPERA, ID);
-        espera.posicionLimpiador = targetLimpiadoresSala[ID];
+        espera.posicionPaciente = targetEsperaPaciente[0];
+        espera.posicionProfesional = targetEspera[0];
+        espera.posicionLimpiador = targetLimpiadoresSala[0];
         salas.Add(espera);
 
 
