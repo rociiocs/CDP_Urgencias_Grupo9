@@ -53,9 +53,13 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetLimpiadoresSala;
     public TargetUrgencias[] targetEspera;
     public TargetUrgencias[] targetEsperaPaciente;
+    public TargetUrgencias[] targetColaDentro;
+    public TargetUrgencias[] targetColaFuera;
     public TargetUrgencias[] asientos;
     public TargetUrgencias casa;
     private int nMuertes = 0;
+    public int aforo;
+    public int aforoMax = 50;
     //public bool ponerSalaSucia = false;
 
 
@@ -312,4 +316,16 @@ public class Mundo: MonoBehaviour
         listaEsperaCirugia.Sort();//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
     }
 
+    public bool hayAforo()
+    {
+        if (aforo < aforoMax)
+        {
+            aforo++;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

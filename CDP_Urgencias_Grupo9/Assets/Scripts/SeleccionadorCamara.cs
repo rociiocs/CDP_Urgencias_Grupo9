@@ -9,7 +9,7 @@ public class SeleccionadorCamara : MonoBehaviour
     public Dropdown seleccionador;
     bool general = true;
     List<Personaje> personajes;
-    Vector3 offset = new Vector3(0,2f, -3.62f);
+    public Vector3 offset = new Vector3(0,2f, -3.62f);
     Vector3 offsetPrimera = new Vector3(0, 2.01f, 0.414f);
     Vector3 offsetCentro = new Vector3(0, 1, 0);
     Vector3 posGeneral;
@@ -73,9 +73,9 @@ public class SeleccionadorCamara : MonoBehaviour
         //tercera persona
         //
 
-        if (!general)
+       /* if (!general)
             main.transform.RotateAround(main.transform.parent.TransformPoint(offsetCentro), new Vector3(0, 1, 0), 11.5f * Time.deltaTime);
-
+            */
 
         //tercera persona
 

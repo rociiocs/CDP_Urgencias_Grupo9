@@ -1053,6 +1053,8 @@ MonoBehaviour:
   - {fileID: 425352808}
   targetEsperaPaciente:
   - {fileID: 1628102560}
+  targetColaDentro: []
+  targetColaFuera: []
   asientos:
   - {fileID: 1343065379}
   - {fileID: 717561579}
@@ -1064,6 +1066,8 @@ MonoBehaviour:
   - {fileID: 720090312}
   - {fileID: 1217600881}
   casa: {fileID: 274072048}
+  aforo: 0
+  aforoMax: 50
 --- !u!4 &114919493
 Transform:
   m_ObjectHideFlags: 0
@@ -6536,6 +6540,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seleccionador: {fileID: 284922900}
+  offset: {x: 0, y: 6, z: -0.5}
 --- !u!114 &727380495
 MonoBehaviour:
   m_ObjectHideFlags: 0

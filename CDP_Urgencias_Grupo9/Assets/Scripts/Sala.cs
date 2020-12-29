@@ -28,7 +28,7 @@ public class Sala
     public Sala(TipoSala tipo, int ID)
     {
         this.tipo = tipo;
-        libre = true;
+        libre = false;
         porcentajeSuciedad = 0;
         this.ID = ID;
         sucio = false;
@@ -36,6 +36,18 @@ public class Sala
     }
     public bool OnUpdateMundo(float umbral, float limiteSuciedad, float speedSuciedad)
     {
+        if(tipo != TipoSala.ESPERA)
+        {
+            if (posicionPaciente.libre || posicionProfesional.libre || posicionLimpiador.libre)
+            {
+                libre = true;
+            }
+            else
+            {
+                libre = false;
+            }
+        }
+        
         if (!libre)
         {
             if (porcentajeSuciedad < limiteSuciedad)
