@@ -43,7 +43,7 @@ public class Limpiador : MonoBehaviour
 
         //Create states
         casa = myFSM.CreateEntryState("casa");
-        casaFin = myFSM.CreateState("casaFin", () => Destroy(this.gameObject));
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
         irPantalla = myFSM.CreateState("irPantalla", irPantallaAction);
         irSala = myFSM.CreateState("irSala", irSalaAction);
@@ -127,7 +127,7 @@ public class Limpiador : MonoBehaviour
                     targetUrgenciasID--;
                     targetUrgencias = mundo.targetLimpiadores[targetUrgenciasID];
                     targetUrgencias.libre = false;
-                    personaje.GoTo(targetUrgencias.transform);
+                    personaje.GoTo(targetUrgencias);
                 }
             }
             
@@ -161,12 +161,12 @@ public class Limpiador : MonoBehaviour
             }
         }
         targetUrgencias.libre = false;
-        personaje.GoTo(targetUrgencias.transform);
+        personaje.GoTo(targetUrgencias);
     }
 
     private void irSalaAction()
     {
-        personaje.GoTo(targetUrgencias.transform);
+        personaje.GoTo(targetUrgencias);
     }
 
     public void limpiarQuirofanoUrgente()
@@ -187,7 +187,7 @@ public class Limpiador : MonoBehaviour
         //Go to target casa
         targetUrgencias.libre = true;
         jornadaFlag = false;
-        personaje.GoTo(mundo.casa.transform);
+        personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
     }
 }

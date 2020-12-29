@@ -49,7 +49,7 @@ public class Medico : MonoBehaviour
         esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
-        casaFin = myFSM.CreateState("casaFin", () => Destroy(this.gameObject));
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
 
 
         //Create perceptions
@@ -108,7 +108,7 @@ public class Medico : MonoBehaviour
         //Nav Mesh ir al target puesto
         targetUrgencias.libre = false;
         sala.libre = false;
-        personaje.GoTo(targetUrgencias.transform);
+        personaje.GoTo(targetUrgencias);
     }
 
     private void irCasaAction()
@@ -116,7 +116,7 @@ public class Medico : MonoBehaviour
         //Go to target casa
         targetUrgencias.libre = true;
         sala.libre = true;
-        personaje.GoTo(mundo.casa.transform);
+        personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
     }
 

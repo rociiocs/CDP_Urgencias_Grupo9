@@ -12,6 +12,7 @@ public class Personaje: MonoBehaviour
     public bool haLlegado = false;
     float epsilon = 0.05f;
     Transform target;
+    TargetUrgencias targetU;
 
     void Awake()
     {
@@ -23,8 +24,15 @@ public class Personaje: MonoBehaviour
         }
     }
 
-    public void GoTo(Transform target)
+    public void GoTo(TargetUrgencias targetUrgencias)
     {
+        if (targetU != null)
+        {
+            targetU.libre = true;
+        }
+        targetU = targetUrgencias;
+        targetU.actual = this;
+        target = targetUrgencias.transform;
         haLlegado = false;
         myAgent.Resume();
         myAgent.SetDestination(target.position);
@@ -44,6 +52,7 @@ public class Personaje: MonoBehaviour
             myAgent.Stop();
             transform.rotation = target.rotation;
             haLlegado = true;
+            targetU.libre = false;
         }
     }
     private bool AproximadamenteCero(float value){

@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class Paciente : MonoBehaviour
 {
+
+    // PROVISIONAL ENFERMERO
+
+    public TargetUrgencias targetBanho;
+    // PROVISIONAL ENFERMERO
+
+
+
     private Personaje personaje;
     public Enfermedad enfermedad;
     public bool tieneBote;
@@ -87,7 +95,7 @@ public class Paciente : MonoBehaviour
         //Create states
         casa = myFSM.CreateEntryState("casa");
         muerto = myFSM.CreateState("muerto");
-        casaFin = myFSM.CreateState("casaFin");
+        casaFin = myFSM.CreateState("casaFin",() => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(gameObject); });
 
         //Submáquina vivo
         vivo = myFSM.CreateSubStateMachine("vivo", myFSMVivo);
@@ -213,7 +221,7 @@ public class Paciente : MonoBehaviour
 
     }
 
-    public void GoTo( Transform transform)// cambio de estado etc y al llegar al punto se cambia otra vez de estado
+    public void GoTo( TargetUrgencias transform)// cambio de estado etc y al llegar al punto se cambia otra vez de estado
     {
         personaje.GoTo(transform);
     }

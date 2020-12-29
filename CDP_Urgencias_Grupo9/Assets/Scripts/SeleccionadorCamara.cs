@@ -15,6 +15,7 @@ public class SeleccionadorCamara : MonoBehaviour
     Vector3 posGeneral;
     Quaternion rotationGeneral;
     Camera main;
+    Personaje current;
     void Start()
     {
         main = Camera.main;
@@ -22,20 +23,27 @@ public class SeleccionadorCamara : MonoBehaviour
         rotationGeneral =main.transform.rotation;
         personajes = new List<Personaje>();
         personajes.AddRange(FindObjectsOfType<Personaje>());
+        UpdateDropdown();
+    }
+
+
+    void UpdateDropdown()
+    {
+        seleccionador.options.Clear();
         List<string> opcionesDropdown = new List<string>();
         opcionesDropdown.Add("General");
-        foreach(Personaje p in personajes)
+        foreach (Personaje p in personajes)
         {
             opcionesDropdown.Add(p.nombre);
         }
         seleccionador.AddOptions(opcionesDropdown);
         seleccionador.onValueChanged.AddListener((value) => ChangeCamera(value));
     }
-
     void ChangeCamera(int value)
     {
         if (value == 0)
         {
+            current = null;
             main.transform.parent = null;
             main.transform.position = posGeneral;
             main.transform.rotation = rotationGeneral;
@@ -46,6 +54,7 @@ public class SeleccionadorCamara : MonoBehaviour
             general = false;
             Transform padre = personajes[value-1].transform;
             main.transform.parent = padre;
+            current = personajes[value - 1];
             //primera persona
             //
 
@@ -79,5 +88,14 @@ public class SeleccionadorCamara : MonoBehaviour
 
         //tercera persona
 
+    }
+    public void EliminarProfesional(Personaje personaje)
+    {
+        personajes.Remove(personaje);
+        UpdateDropdown();
+        if (current.Equals(personaje))
+        {
+            ChangeCamera(0);
+        }
     }
 }

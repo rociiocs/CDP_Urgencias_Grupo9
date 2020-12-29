@@ -56,6 +56,7 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetColaDentro;
     public TargetUrgencias[] targetColaFuera;
     public TargetUrgencias[] asientos;
+    public TargetUrgencias[] banhos;
     public TargetUrgencias casa;
     private int nMuertes = 0;
     public int aforo;
@@ -70,36 +71,47 @@ public class Mundo: MonoBehaviour
         
         //Creacion de salas
         int ID = 0;
-        for (int i = 0; i < numEnfermeria; i++)
+        for (int i = 0; i < numEnfermeriaP; i++)
         {
             Sala nueva = new Sala(TipoSala.ENFERMERIA, ID);
             //Esto se debería hacer dos veces
             nueva.posicionPaciente = targetEnfermeriaPaciente[i];
             nueva.posicionProfesional = targetEnfermeria[i];
-            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+           
             salas.Add(nueva);
-
-            ID++;
+            if (ID < numEnfermeria)
+            {
+                nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+                ID++;
+            }
+         
         }
-        for (int i = 0; i < numCirugia; i++)
+        for (int i = 0; i < numCirugiaP; i++)
         {
             Sala nueva = new Sala(TipoSala.CIRUGIA, ID);
             nueva.posicionPaciente = targetCirujanoPaciente[i];
             nueva.posicionProfesional = targetCirujano[i];
-            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
             salas.Add(nueva);
-      
-            ID++;
+            if (ID < numCirugia)
+            {
+                nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+                ID++;
+            }
+           
         }
-        for (int i = 0; i <numMedico; i++)
+        for (int i = 0; i <numMedicoP; i++)
         {
             Sala nueva = new Sala(TipoSala.MEDICO, ID);
             nueva.posicionPaciente = targetMedicoPaciente[i];
             nueva.posicionProfesional = targetMedico[i];
-            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+          
             salas.Add(nueva);
-      
-            ID++;
+
+            if (ID < numMedico)
+            {
+                nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+                ID++;
+            }
         }
 
         Sala espera = new Sala(TipoSala.ESPERA, ID);
@@ -294,7 +306,7 @@ public class Mundo: MonoBehaviour
                 {
                    Paciente llamado= listaEspera[0];
                    listaEspera.RemoveAt(0);
-                   llamado.GoTo(s.posicionPaciente.transform);
+                   llamado.GoTo(s.posicionPaciente);
                 }
             }
         }

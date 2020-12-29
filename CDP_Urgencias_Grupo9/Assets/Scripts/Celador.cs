@@ -54,7 +54,7 @@ public class Celador : MonoBehaviour
         esperandoCompañero = myFSM.CreateState("esperandoCompañero", esperandoCompañeroAction); ;
         atendiendoUrgente = myFSM.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
         paseandoSala = myFSM.CreateState("paseandoSala", () => PutEmoji(emoEsperarPaciente));
-        casaFin = myFSM.CreateState("casaFin", () => Destroy(this.gameObject));
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
 
         //Create perceptions
         //Si hay un paciente delante
@@ -127,14 +127,14 @@ public class Celador : MonoBehaviour
         //Nav Mesh ir al target puesto
         targetUrgencias.libre = false;
         sala.libre = false;
-        personaje.GoTo(targetUrgencias.transform);
+        personaje.GoTo(targetUrgencias);
     }
 
     private void irCasaAction()
     {
         targetUrgencias.libre = true;
         sala.libre = true;
-        personaje.GoTo(mundo.casa.transform);
+        personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
     }
 

@@ -53,7 +53,7 @@ public class Cirujano : MonoBehaviour
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
         esperarLimpiador = myFSM.CreateState("esperarLimpiador", ()=> PutEmoji(emoSucio));
-        casaFin = myFSM.CreateState("casaFin", () => Destroy(this.gameObject));
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
 
         //Create perceptions
         //Si hay un paciente delante
@@ -126,7 +126,7 @@ public class Cirujano : MonoBehaviour
         //Nav Mesh ir al target puesto
         targetUrgencias.libre = false;
         sala.libre = false;
-        personaje.GoTo(targetUrgencias.transform);
+        personaje.GoTo(targetUrgencias);
     }
 
     private void irCasaAction()
@@ -134,7 +134,7 @@ public class Cirujano : MonoBehaviour
         //Go to target casa
         targetUrgencias.libre = true;
         sala.libre = true;
-        personaje.GoTo(mundo.casa.transform);
+        personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
 
     }
