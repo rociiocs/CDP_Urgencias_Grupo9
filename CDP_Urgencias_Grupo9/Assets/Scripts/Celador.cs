@@ -12,7 +12,8 @@ public class Celador : MonoBehaviour
     public bool turnoSala;
 
     Personaje personaje;
-    TargetUrgencias targetUrgencias;
+    TargetUrgencias targetUrgenciasMostrador;
+    TargetUrgencias targetUrgenciasSala;
     TargetUrgencias targetPaciente;
     List<Sala> puestos;
 
@@ -25,9 +26,13 @@ public class Celador : MonoBehaviour
     Mundo mundo;
     //Maquina de estados
     StateMachineEngine myFSM;
+    StateMachineEngine myFSMMostrador;
+    StateMachineEngine myFSMSala;
 
     //Estados
     State casa;
+    State mostrador;
+    State salaState;
     State irPuestoTrabajo;
     State irCasa;
     State esperarPaciente;
@@ -41,26 +46,32 @@ public class Celador : MonoBehaviour
     void Start()
     {
         myFSM = new StateMachineEngine();
+        myFSMMostrador = new StateMachineEngine(BehaviourEngine.IsASubmachine);
+        myFSMSala = new StateMachineEngine(BehaviourEngine.IsASubmachine);
+
         mundo = FindObjectOfType<Mundo>();
         personaje = GetComponent<Personaje>();
         puestos = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.ESPERA));
 
         //Create states
+        mostrador = myFSM.CreateSubStateMachine("mostrador", myFSMMostrador);
+        salaState = myFSM.CreateSubStateMachine("salaState", myFSMSala);
+
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);//Se emplea no solo al llegar sino para cambiar de turno
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
-        atendiendoPaciente = myFSM.CreateState("atendiendoPaciente", atendiendoPacienteAction);
+        esperarPaciente = myFSMMostrador.CreateEntryState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
+        atendiendoPaciente = myFSMMostrador.CreateState("atendiendoPaciente", atendiendoPacienteAction);
         esperandoCompañero = myFSM.CreateState("esperandoCompañero", esperandoCompañeroAction); ;
-        atendiendoUrgente = myFSM.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
-        paseandoSala = myFSM.CreateState("paseandoSala", () => PutEmoji(emoEsperarPaciente));
+        atendiendoUrgente = myFSMSala.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
+        paseandoSala = myFSMSala.CreateEntryState("paseandoSala", () => PutEmoji(emoEsperarPaciente));
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarCelador(personaje.nombre); Destroy(this.gameObject); });
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Mirar
+        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Mirar
         //Si hay un paciente urgente que atender
-        Perception urgenteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Necesito un tipo de target para los urgentes
+        Perception urgenteAtender = myFSMSala.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Necesito un tipo de target para los urgentes
         //Si se produce cambio de turno
         Perception cambioTurno = myFSM.CreatePerception<TimerPerception>(timeTurno);
         //Si hay un puesto libre donde voy a cambiar
@@ -72,9 +83,9 @@ public class Celador : MonoBehaviour
         //Si el puesto de trabajo está libre, ir hacia él
         Perception comienzaJornada = myFSM.CreatePerception<PushPerception>();
         //Cuando termina de examinar a un paciente, con un timer,
-        Perception terminarAtender = myFSM.CreatePerception<TimerPerception>(timeAtender);//puede que sea value si se usa animación
+        Perception terminarAtender = myFSMMostrador.CreatePerception<TimerPerception>(timeAtender);//puede que sea value si se usa animación
         //Cuando termina de examinar a un paciente, con un timer,
-        Perception terminarUrgente = myFSM.CreatePerception<TimerPerception>(timeAtender);//se usa el mismo timer para atender en mostrador y en sala, dependerá de la animación
+        Perception terminarUrgente = myFSMSala.CreatePerception<TimerPerception>(timeAtender);//se usa el mismo timer para atender en mostrador y en sala, dependerá de la animación
         //Se da la percepción desde el update, comprobando si está en la posición correcta
         Perception llegadaCasa = myFSM.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         //Se da la percepción desde el update, comprobando si está en la posición correcta
@@ -82,13 +93,14 @@ public class Celador : MonoBehaviour
 
         //Create transitions
         myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, irPuestoTrabajo);
-        myFSM.CreateTransition("llegar puesto trabajo", irPuestoTrabajo, llegadaPuesto, esperarPaciente);
+        myFSM.CreateTransition("llegar puesto trabajo mostrador", irPuestoTrabajo, llegadaPuesto, mostrador);
+        myFSM.CreateTransition("llegar puesto trabajo sala", irPuestoTrabajo, llegadaPuesto, salaState);
         myFSM.CreateTransition("llega paciente", esperarPaciente, pacienteAtender, atendiendoPaciente);
         myFSM.CreateTransition("llega urgente", paseandoSala, urgenteAtender, atendiendoUrgente);
         myFSM.CreateTransition("atencion completada", atendiendoPaciente, terminarAtender, esperarPaciente);
         myFSM.CreateTransition("urgente completada", atendiendoUrgente, terminarUrgente, paseandoSala);
-        myFSM.CreateTransition("cambio de turnoMS", esperarPaciente, cambioTurno, esperandoCompañero);//No se si hay alguna forma de hacerlo bidireccional
-        myFSM.CreateTransition("cambio de turnoSM", paseandoSala, cambioTurno, esperandoCompañero);//No se si hay alguna forma de hacerlo bidireccional
+        myFSM.CreateTransition("cambio de turnoMS", mostrador, cambioTurno, salaState);//No se si hay alguna forma de hacerlo bidireccional
+        myFSM.CreateTransition("cambio de turnoSM", salaState, cambioTurno, mostrador);//No se si hay alguna forma de hacerlo bidireccional
         myFSM.CreateTransition("hueco libre", esperandoCompañero, huecoLibre, irPuestoTrabajo);
         myFSM.CreateTransition("cambio directoMS", esperarPaciente, huecoYTurno, paseandoSala);//No se si hay alguna forma de hacerlo bidireccional
         myFSM.CreateTransition("cambio directoSM", paseandoSala, huecoYTurno, esperarPaciente);
@@ -107,14 +119,31 @@ public class Celador : MonoBehaviour
             //Habría que distinguir de alguna forma los puestos de mostrador y de sala
             for (int i = 0; i < puestos.Count; i++)
             {
-                if (puestos[i].posicionProfesional.libre)
+                if (!turnoSala)
                 {
-                    sala = puestos[i];
-                    targetUrgencias = sala.posicionProfesional;
-                    targetPaciente = sala.posicionPaciente;
-                    myFSM.Fire("comienza jornada");
-                    puestos[i].posicionProfesional.libre = false;
-                    return;
+                    if (puestos[i].posicionProfesional.libre)
+                    {
+                        sala = puestos[i];
+                        targetUrgenciasMostrador = sala.posicionProfesional;
+                        targetUrgenciasSala = sala.posicionProfesionalSala;
+                        targetPaciente = sala.posicionPaciente;
+                        myFSM.Fire("comienza jornada");
+                        puestos[i].posicionProfesional.libre = false;
+                        return;
+                    }
+                }
+                else
+                {
+                    if (puestos[i].posicionProfesionalSala.libre)
+                    {
+                        sala = puestos[i];
+                        targetUrgenciasMostrador = sala.posicionProfesional;
+                        targetUrgenciasSala = sala.posicionProfesionalSala;
+                        targetPaciente = sala.posicionPaciente;
+                        myFSM.Fire("comienza jornada");
+                        puestos[i].posicionProfesionalSala.libre = false;
+                        return;
+                    }
                 }
             }
         }
@@ -126,14 +155,23 @@ public class Celador : MonoBehaviour
     private void irPuestoTrabajoAction()
     {
         //Nav Mesh ir al target puesto
-        targetUrgencias.libre = false;
         sala.libre = false;
-        personaje.GoTo(targetUrgencias);
+        if (!turnoSala)
+        {
+            targetUrgenciasMostrador.libre = false;
+            personaje.GoTo(targetUrgenciasMostrador);
+        }
+        else
+        {
+            targetUrgenciasSala.libre = false;
+            personaje.GoTo(targetUrgenciasSala);
+        }
     }
 
     private void irCasaAction()
     {
-        targetUrgencias.libre = true;
+        if (turnoSala) { targetUrgenciasSala.libre = true; } else { targetUrgenciasMostrador.libre = true; }
+        
         sala.libre = true;
         personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);

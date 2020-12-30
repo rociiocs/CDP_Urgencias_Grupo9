@@ -45,7 +45,6 @@ public class Mundo: MonoBehaviour
     public List<Paciente> listaEsperaMedico = new List<Paciente>();
     public List<Paciente> listaEsperaCirugia = new List<Paciente>();
     public List<Limpiador> listaLimpiadores = new List<Limpiador>();
-    public List<TargetUrgencias> mostradores;
     private int numEnfermeria = 3, numMedico = 4, numCirugia = 2;
     private int numEnfermeriaP = 6, numMedicoP = 4, numCirugiaP = 2;
     public int numEnfermeros = 3, numMedicos = 2, numCirujanos = 1, numCeladores = 2, numLimpiadores = 2;
@@ -126,6 +125,7 @@ public class Mundo: MonoBehaviour
         Sala espera = new Sala(TipoSala.ESPERA, ID);
         espera.posicionPaciente = targetEsperaPaciente[0];
         espera.posicionProfesional = targetEspera[0];
+        espera.posicionProfesionalSala = targetEspera[2];
         espera.posicionLimpiador = targetLimpiadoresSala[targetLimpiadoresSala.Length-1];
         salas.Add(espera);
 
