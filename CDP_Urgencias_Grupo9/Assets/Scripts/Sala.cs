@@ -38,7 +38,9 @@ public class Sala
     {
         if(tipo != TipoSala.ESPERA)
         {
-            if (posicionPaciente.libre || posicionProfesional.libre || posicionLimpiador.libre)
+            //if (posicionPaciente.libre || posicionProfesional.libre || posicionLimpiador.libre)
+            //{
+            if (posicionPaciente.libre)
             {
                 libre = true;
             }

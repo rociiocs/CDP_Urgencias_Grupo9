@@ -23,14 +23,12 @@ public class Enfermero : MonoBehaviour
 {
     //info
     StateMachineEngine myFSM;
-    float timeJornada = 20, timeAnimacionAtender = 3;
+    float timeJornada = 10, timeAnimacionAtender = 3;
     public bool llevarLabFlag = false, jornadaFlag = false;
     Analisis currentAnalisis;
     //Referencias
     public TargetUrgencias puestoTrabajo;
     public TargetUrgencias asientoPaciente;
-    public TargetUrgencias salidaCasa;
-    public TargetUrgencias laboratorioTarget;
     public TargetUrgencias banhoTarget;
     public Image emoticono;
     public Sprite emoEsperando, emoCasa, emoSangre, emoBote, emoOrina, emoPCR, emoLAB, emoSuero, emoEsperandoOrina;
@@ -49,16 +47,16 @@ public class Enfermero : MonoBehaviour
     {
 
         myFSM = new StateMachineEngine();
-        State casaFin = myFSM.CreateState("casafin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(gameObject); });
+        State casaFin = myFSM.CreateState("casafin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarEnfermero(banhoTarget, personaje.nombre); Destroy(gameObject); });
         State enCasa = myFSM.CreateEntryState("casa");
         State yendoPuesto = myFSM.CreateState("irPuestoTrabajo", () => { personaje.GoTo(puestoTrabajo); jornadaFlag = false; });
-        State yendoCasa = myFSM.CreateState("irCasa", () => { PutEmoji(emoCasa); personaje.GoTo(salidaCasa); });
+        State yendoCasa = myFSM.CreateState("irCasa", () => { PutEmoji(emoCasa); personaje.GoTo(mundo.casa); });
         State esperando = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperando); DespacharPaciente(); });// idle
         State analisisSangre = myFSM.CreateState("analisisSangre", () => { Atender(emoSangre); });//animacion y emoticonillo
         State analisisOrina = myFSM.CreateState("analisisOrina", () => Atender(emoOrina));//animacion y emoticonillo
         State analisisPCR = myFSM.CreateState("analisisPCR", () => Atender(emoPCR)); //animacion y emoticonillo
         State suero = myFSM.CreateState("meterSuero", () => Atender(emoSuero));//animacion y emoticonillo;
-        State laboratorio = myFSM.CreateState("llevarLab", () => { DespacharPaciente(); PutEmoji(emoLAB); personaje.GoTo(laboratorioTarget); });
+        State laboratorio = myFSM.CreateState("llevarLab", () => { DespacharPaciente(); PutEmoji(emoLAB); personaje.GoTo(mundo.laboratorio); puestoTrabajo.libre = false; });
         State darBote = myFSM.CreateState("darBote", () => { Atender(emoBote); currentPaciente.targetBanho = banhoTarget; });//Darle al paciente  animacion y emoticono
         State examinarPaciente = myFSM.CreateState("examinar", () => ExaminarPaciente());//es un  micromomento
         State esperandoPacienteBanho = myFSM.CreateState("esperarBanho", () => PacienteABaño());
@@ -176,14 +174,15 @@ public class Enfermero : MonoBehaviour
         {
             List<Sala> enfermeria = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.ENFERMERIA));
             //Si el puesto de trabajo está libre
-            for (int i = 0; i < enfermeria.Count; i++)// MAS QUE COUNT, NUMERO DE ENFERMERIAS
+            for (int i = 0; i < mundo.numEnfermeros; i++)// MAS QUE COUNT, NUMERO DE ENFERMERIAS
             {
-                if (enfermeria[i].libre)
+                if (enfermeria[i].posicionProfesional.libre)
                 {
 
                     puestoTrabajo = enfermeria[i].posicionProfesional;
                     asientoPaciente = enfermeria[i].posicionPaciente;
                     jornadaFlag = true;
+                    enfermeria[i].posicionProfesional.libre = false;
                     return;
                 }
             }

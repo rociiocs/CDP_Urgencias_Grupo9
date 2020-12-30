@@ -41,7 +41,7 @@ public class Celador : MonoBehaviour
     void Start()
     {
         myFSM = new StateMachineEngine();
-        mundo = GetComponentInParent<Mundo>();
+        mundo = FindObjectOfType<Mundo>();
         personaje = GetComponent<Personaje>();
         puestos = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.ESPERA));
 
@@ -54,7 +54,7 @@ public class Celador : MonoBehaviour
         esperandoCompañero = myFSM.CreateState("esperandoCompañero", esperandoCompañeroAction); ;
         atendiendoUrgente = myFSM.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
         paseandoSala = myFSM.CreateState("paseandoSala", () => PutEmoji(emoEsperarPaciente));
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarCelador(personaje.nombre); Destroy(this.gameObject); });
 
         //Create perceptions
         //Si hay un paciente delante
@@ -107,12 +107,13 @@ public class Celador : MonoBehaviour
             //Habría que distinguir de alguna forma los puestos de mostrador y de sala
             for (int i = 0; i < puestos.Count; i++)
             {
-                if (puestos[i].libre)
+                if (puestos[i].posicionProfesional.libre)
                 {
                     sala = puestos[i];
                     targetUrgencias = sala.posicionProfesional;
                     targetPaciente = sala.posicionPaciente;
                     myFSM.Fire("comienza jornada");
+                    puestos[i].posicionProfesional.libre = false;
                     return;
                 }
             }

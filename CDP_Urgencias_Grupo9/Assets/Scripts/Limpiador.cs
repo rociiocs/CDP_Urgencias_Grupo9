@@ -36,14 +36,14 @@ public class Limpiador : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        mundo = GetComponentInParent<Mundo>();
+        mundo = FindObjectOfType<Mundo>();
         personaje = GetComponent<Personaje>();
         myFSM = new StateMachineEngine();
         jornadaFlag = true;
 
         //Create states
         casa = myFSM.CreateEntryState("casa");
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarLimpiador(personaje.nombre); Destroy(this.gameObject); });
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
         irPantalla = myFSM.CreateState("irPantalla", irPantallaAction);
         irSala = myFSM.CreateState("irSala", irSalaAction);
@@ -155,17 +155,19 @@ public class Limpiador : MonoBehaviour
         {
             if (mundo.targetLimpiadores[i].libre)
             {
+                mundo.targetLimpiadores[i].libre = false;
                 targetUrgencias = mundo.targetLimpiadores[i];
                 targetUrgenciasID = i;
                 break;
             }
         }
-        targetUrgencias.libre = false;
+       // targetUrgencias.libre = false;
         personaje.GoTo(targetUrgencias);
     }
 
     private void irSalaAction()
     {
+       
         personaje.GoTo(targetUrgencias);
     }
 

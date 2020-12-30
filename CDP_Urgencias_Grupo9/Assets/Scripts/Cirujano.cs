@@ -39,7 +39,7 @@ public class Cirujano : MonoBehaviour
 
     void Start()
     {
-        mundo = GetComponentInParent<Mundo>();
+        mundo = FindObjectOfType<Mundo>();
         personaje = GetComponent<Personaje>();
         quirofanos = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
         myFSM = new StateMachineEngine();
@@ -53,7 +53,7 @@ public class Cirujano : MonoBehaviour
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
         esperarLimpiador = myFSM.CreateState("esperarLimpiador", ()=> PutEmoji(emoSucio));
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarCirujano(personaje.nombre); Destroy(this.gameObject); });
 
         //Create perceptions
         //Si hay un paciente delante
@@ -97,8 +97,9 @@ public class Cirujano : MonoBehaviour
             //Si el puesto de trabajo está libre
             for (int i = 0; i < quirofanos.Count; i++)
             {
-                if (quirofanos[i].libre)
+                if (quirofanos[i].posicionProfesional.libre)
                 {
+                    quirofanos[i].posicionProfesional.libre = false;
                     sala = quirofanos[i];
                     targetUrgencias = sala.posicionProfesional;
                     targetPaciente = sala.posicionProfesional;

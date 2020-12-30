@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Medico : MonoBehaviour
 {
+   
     //Variables
     public int timeJornada = 2000;
     int timeExaminar = 5;
@@ -38,7 +39,7 @@ public class Medico : MonoBehaviour
     void Start()
     {
         myFSM = new StateMachineEngine();
-        mundo = GetComponentInParent<Mundo>();
+        mundo =FindObjectOfType<Mundo>();
         personaje = GetComponent<Personaje>();
         oficinas = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.MEDICO));
 
@@ -49,7 +50,7 @@ public class Medico : MonoBehaviour
         esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(this.gameObject); });
+        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarMedico(personaje.nombre); Destroy(this.gameObject); });
 
 
         //Create perceptions
@@ -88,8 +89,9 @@ public class Medico : MonoBehaviour
             //Si el puesto de trabajo está libre
             for (int i = 0; i < oficinas.Count; i++)
             {
-                if (oficinas[i].libre)
+                if (oficinas[i].posicionProfesional.libre)
                 {
+                    oficinas[i].posicionProfesional.libre = false;
                     sala = oficinas[i];
                     targetUrgencias = sala.posicionProfesional;
                     targetPaciente = sala.posicionPaciente;

@@ -10,7 +10,7 @@ public class Personaje: MonoBehaviour
     Animator animator;
     bool andando = false;
     public bool haLlegado = false;
-    float epsilon = 0.05f;
+    float epsilon = 0.1f;
     Transform target;
     TargetUrgencias targetU;
 
@@ -55,6 +55,7 @@ public class Personaje: MonoBehaviour
             targetU.libre = false;
         }
     }
+    
     private bool AproximadamenteCero(float value){
 
         return value <= epsilon;

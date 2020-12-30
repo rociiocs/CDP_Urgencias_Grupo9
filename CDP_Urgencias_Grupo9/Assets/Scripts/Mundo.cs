@@ -31,6 +31,12 @@ public enum Paso
 public class Mundo: MonoBehaviour
 {
 
+    //Referencia sa prefabs
+    public GameObject prefabEnfermero, prefabPaciente, prefabMedico, prefabCelador, prefabCirujano, prefabLimpiador;
+
+    //referencia al seleccionador de camara
+    SeleccionadorCamara sc;
+    //
     public List<Enfermedad> enfermedades = new List<Enfermedad>();
     public List<Sala> salas = new List<Sala>();
     public List<Sala> salasSucias = new List<Sala>();
@@ -42,6 +48,7 @@ public class Mundo: MonoBehaviour
     public List<TargetUrgencias> mostradores;
     private int numEnfermeria = 3, numMedico = 4, numCirugia = 2;
     private int numEnfermeriaP = 6, numMedicoP = 4, numCirugiaP = 2;
+    public int numEnfermeros = 3, numMedicos = 2, numCirujanos = 1, numCeladores = 2, numLimpiadores = 2;
     public float umbral= 65, speedSuciedad=0.01f, limitePorcentaje = 100;
     public TargetUrgencias[] targetMedico;
     public TargetUrgencias[] targetMedicoPaciente;
@@ -57,6 +64,7 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetColaFuera;
     public TargetUrgencias[] asientos;
     public TargetUrgencias[] banhos;
+    public TargetUrgencias laboratorio;
     public TargetUrgencias casa;
     private int nMuertes = 0;
     public int aforo;
@@ -66,6 +74,7 @@ public class Mundo: MonoBehaviour
 
     void Awake()
     {
+        sc = FindObjectOfType<SeleccionadorCamara>();
 
         //Instantiate numPersonajes
         
@@ -117,7 +126,7 @@ public class Mundo: MonoBehaviour
         Sala espera = new Sala(TipoSala.ESPERA, ID);
         espera.posicionPaciente = targetEsperaPaciente[0];
         espera.posicionProfesional = targetEspera[0];
-        espera.posicionLimpiador = targetLimpiadoresSala[0];
+        espera.posicionLimpiador = targetLimpiadoresSala[targetLimpiadoresSala.Length-1];
         salas.Add(espera);
 
 
@@ -272,6 +281,73 @@ public class Mundo: MonoBehaviour
         */
     }
 
+    public void CrearProfesionales()
+    {
+        for(int i=0; i < numCeladores; i++)
+        {
+            Personaje nuevo = Instantiate(prefabCelador, casa.transform.position,Quaternion.identity).GetComponent<Personaje>();
+            nuevo.nombre = "Celador " + i;
+            sc.AnhadirProfesional(nuevo);
+           
+        }
+        for (int i = 0; i < numEnfermeros; i++)
+        {
+            Enfermero nuevo = Instantiate(prefabEnfermero, casa.transform.position, Quaternion.identity).GetComponent<Enfermero>();
+            nuevo.banhoTarget = banhos[i];
+            nuevo.gameObject.GetComponent<Personaje>().nombre = "Enfermero " + i;
+            sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
+        }
+        for (int i = 0; i < numMedicos; i++)
+        {
+            Personaje nuevo = Instantiate(prefabMedico, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+            nuevo.nombre = "Medico " + i;
+            sc.AnhadirProfesional(nuevo);
+        }
+        for (int i = 0; i < numLimpiadores; i++)
+        {
+            Personaje nuevo = Instantiate(prefabLimpiador, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+            nuevo.nombre = "Limpiador " + i;
+            sc.AnhadirProfesional(nuevo);
+        }
+        for (int i = 0; i < numCirujanos; i++)
+        {
+            Personaje nuevo = Instantiate(prefabCirujano, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+            nuevo.nombre = "Cirujano " + i;
+            sc.AnhadirProfesional(nuevo);
+        }
+    }
+    public void ReemplazarEnfermero(TargetUrgencias banho, string nombre)
+    {
+        Enfermero nuevo = Instantiate(prefabEnfermero, casa.transform.position, Quaternion.identity).GetComponent<Enfermero>();
+        nuevo.banhoTarget = banho;
+        nuevo.GetComponent<Personaje>().nombre = nombre;
+        sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
+    }
+    public void ReemplazarLimpiador(string nombre)
+    {
+        Personaje nuevo = Instantiate(prefabLimpiador, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+        nuevo.nombre = nombre;
+        sc.AnhadirProfesional(nuevo);
+    }
+    public void ReemplazarCelador(string nombre)
+    {
+        Personaje nuevo = Instantiate(prefabCelador, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+        nuevo.nombre = nombre;
+        sc.AnhadirProfesional(nuevo);
+    }
+    public void ReemplazarMedico(string nombre)
+    {
+        Personaje nuevo = Instantiate(prefabMedico, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+        nuevo.nombre = nombre;
+        sc.AnhadirProfesional(nuevo);
+    }
+    public void ReemplazarCirujano(string nombre)
+    {
+        Personaje nuevo = Instantiate(prefabCirujano, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
+        nuevo.nombre = nombre;
+        sc.AnhadirProfesional(nuevo);
+    }
+ 
     private void LlamarLimpiadores()
     {
         int cont;

@@ -89,13 +89,21 @@ public class SeleccionadorCamara : MonoBehaviour
         //tercera persona
 
     }
+    public void AnhadirProfesional( Personaje p)
+    {
+        personajes.Add(p);
+        UpdateDropdown();
+    }
     public void EliminarProfesional(Personaje personaje)
     {
         personajes.Remove(personaje);
         UpdateDropdown();
-        if (current.Equals(personaje))
+        if (current != null)
         {
-            ChangeCamera(0);
+            if (current.Equals(personaje))
+            {
+                ChangeCamera(0);
+            }
         }
     }
 }
