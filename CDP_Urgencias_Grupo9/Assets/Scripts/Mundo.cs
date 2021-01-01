@@ -61,6 +61,7 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetEsperaPaciente;
     public TargetUrgencias[] targetColaDentro;
     public TargetUrgencias[] targetColaFuera;
+    public TargetUrgencias[] targetMostradorPaciente;
     public TargetUrgencias[] asientos;
     public TargetUrgencias[] banhos;
     public TargetUrgencias laboratorio;

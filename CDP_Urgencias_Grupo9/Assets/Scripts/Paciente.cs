@@ -9,14 +9,13 @@ public class Paciente : MonoBehaviour
 
     public TargetUrgencias targetBanho;
     // PROVISIONAL ENFERMERO
-
-
-
+    
     private Personaje personaje;
     public Enfermedad enfermedad;
     public bool tieneBote;
     public bool urgente;
     public bool estoyVivo = true;
+    public TargetUrgencias targetUrgencias;
     public int targetUrgenciasID;
     public int timerOrina = 5;
     public int timerAnimacionMorir = 5;
@@ -122,12 +121,12 @@ public class Paciente : MonoBehaviour
         //Cola fuera
         haciendoColaFuera = myFSMVivo.CreateSubStateMachine("haciendoColaFuera", myFSMColaFuera);
         esperandoCola = myFSMColaFuera.CreateEntryState("esperandoCola");
-        avanzandoCola = myFSMColaFuera.CreateState("avanzandoCola");
+        avanzandoCola = myFSMColaFuera.CreateState("avanzandoCola", avanzandoColaAction);
 
         //Cola dentro
         haciendoColaDentro = myFSMVivo.CreateSubStateMachine("haciendoColaDentro", myFSMColaDentro);
         esperandoColaDentro = myFSMColaDentro.CreateEntryState("esperandoCola");
-        avanzandoColaDentro = myFSMColaDentro.CreateState("avanzandoCola");
+        avanzandoColaDentro = myFSMColaDentro.CreateState("avanzandoCola", avanzandoColaDentroAction);
 
         //Analisis de orina
         haciendoAnalisisOrina = myFSMVivo.CreateSubStateMachine("haciendoAnalisisOrina", myFSMAnalisisOrina);
@@ -159,7 +158,7 @@ public class Paciente : MonoBehaviour
         Perception heMuerto = myFSM.CreatePerception<TimerPerception>(enfermedad.timerEnfermedad);
 
         Perception noSoyUrgente = myFSMVivo.CreatePerception<ValuePerception>(() => !urgente);
-        Perception hayHueco = myFSMColaFuera.CreatePerception<ValuePerception>(() => mundo.targetColaFuera[targetUrgenciasID-1].libre);
+        Perception hayHueco = myFSMColaFuera.CreatePerception<ValuePerception>(() => mundo.targetColaFuera[targetUrgenciasID-1].libre && targetUrgenciasID!= 0);
         Perception heAvanzado = myFSMColaFuera.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         Perception noHayAforo = myFSMVivo.CreatePerception<ValuePerception>(() => targetUrgenciasID == 0 && mundo.hayAforo());
 
@@ -238,5 +237,20 @@ public class Paciente : MonoBehaviour
     private void vivoAction()
     {
 
+    }
+    private void avanzandoColaAction()
+    {
+        targetUrgencias.libre = true;
+        targetUrgencias = mundo.targetColaFuera[targetUrgenciasID--];
+        targetUrgencias.libre = false;
+        GoTo(targetUrgencias);
+    }
+
+    private void avanzandoColaDentroAction()
+    {
+        targetUrgencias.libre = true;
+        targetUrgencias = mundo.targetColaDentro[targetUrgenciasID--];
+        targetUrgencias.libre = false;
+        GoTo(targetUrgencias);
     }
 }
