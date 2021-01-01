@@ -253,4 +253,31 @@ public class Paciente : MonoBehaviour
         targetUrgencias.libre = false;
         GoTo(targetUrgencias);
     }
+    //Las cosas de morirse
+    //Se llama con un StartCoroutine(Die()), justo antes de hacer lo siguiente en el update
+    /*if (fade == true)
+        {
+        //Se coge el material y se va bajando el alpha hasta que llegue a cero, entonces se detiene con el booleano
+            Color oColor = GetComponentInChildren<SkinnedMeshRenderer>().material.color;
+    float fadeAmount = oColor.a - (0.2f * Time.deltaTime);
+    oColor = new Color(oColor.r, oColor.g, oColor.b, fadeAmount);
+    GetComponentInChildren<SkinnedMeshRenderer>().material.color = oColor;
+            if (oColor.a <= 0)
+            {
+                fade = false;
+            }
+        }*/
+    IEnumerator Die()
+    {
+        //Los dos primeros segundos son maomenos el tiempo que tarde en segundos en caer al suelo durante la animación de morirse
+        yield return new WaitForSeconds(2);
+        //Se coge la posición para ir modificándola
+        var t = transform.position;
+        //Se le hace ascender a esa velocidad
+        t.y += 3 * Time.deltaTime;
+        transform.position = t;
+        //Después de este tiempo se destruye, para dar tiempo a desvanecer al personaje
+        yield return new WaitForSeconds(2.5f);
+        Destroy(gameObject);
+    }
 }
