@@ -7,6 +7,10 @@ public class TargetUrgencias : MonoBehaviour
     public bool libre;
     public bool ocupado;
     public Personaje actual;
+    private void Start()
+    {
+        libre = true;
+    }
     public void SetLibre(bool value)
     {
         libre = value;

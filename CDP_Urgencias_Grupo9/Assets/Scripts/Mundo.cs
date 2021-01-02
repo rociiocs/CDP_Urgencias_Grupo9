@@ -37,6 +37,7 @@ public class Mundo: MonoBehaviour
     //referencia al seleccionador de camara
     SeleccionadorCamara sc;
     //
+    public Sprite[] emoticonoEnfermedad;
     public List<Enfermedad> enfermedades = new List<Enfermedad>();
     public List<Sala> salas = new List<Sala>();
     public List<Sala> salasSucias = new List<Sala>();
@@ -64,9 +65,17 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetMostradorPaciente;
     public TargetUrgencias[] asientos;
     public TargetUrgencias[] banhos;
+
     public TargetUrgencias laboratorio;
     public TargetUrgencias casa;
+    public TargetUrgencias casaPaciente;
     private int nMuertes = 0;
+    private int MAX_PACIENTES = 15;
+    //private float spawnMaxTime = 15f;
+    //private float spawnMinTime = 9f;
+    private float spawnMaxTime = 0;
+    private float spawnMinTime = 9;
+    private int contPacientes = 0;
     public int aforo;
     public int aforoMax = 50;
     //public bool ponerSalaSucia = false;
@@ -316,6 +325,7 @@ public class Mundo: MonoBehaviour
             nuevo.nombre = "Cirujano " + i;
             sc.AnhadirProfesional(nuevo);
         }
+        StartCoroutine(SpawnPacientes());
     }
     public void ReemplazarEnfermero(TargetUrgencias banho, string nombre)
     {
@@ -403,6 +413,21 @@ public class Mundo: MonoBehaviour
     {
         listaEsperaCirugia.Add(paciente);
         listaEsperaCirugia.Sort();//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
+    }
+    IEnumerator SpawnPacientes()
+    {
+        while (true)
+        {
+            float time = Random.Range(spawnMinTime, spawnMaxTime);
+            yield return new WaitForSeconds(time);
+            yield return new WaitUntil(()=>contPacientes < MAX_PACIENTES);
+            contPacientes++;
+            Paciente nuevo= Instantiate(prefabPaciente, casaPaciente.transform.position,Quaternion.identity).GetComponent<Paciente>();
+            int enfermedad = (int)Random.Range(0, enfermedades.Count);
+            Enfermedad aux = enfermedades[enfermedad];
+            nuevo.setEnfermedad(aux, emoticonoEnfermedad[(int)aux.tipoEnfermedad]);
+            
+        }
     }
 
     public bool hayAforo()
