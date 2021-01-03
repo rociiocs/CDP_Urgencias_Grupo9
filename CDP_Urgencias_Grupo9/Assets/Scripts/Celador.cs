@@ -188,6 +188,8 @@ public class Celador : MonoBehaviour
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;
         PutEmoji(emoAtender);
+        paciente.myFSMVivo.Fire("esperando sala");
+
     }
     private void atendiendoUrgenteAction()
     {

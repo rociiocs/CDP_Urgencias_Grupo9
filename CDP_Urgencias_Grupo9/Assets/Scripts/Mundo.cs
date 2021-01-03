@@ -59,10 +59,9 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetLimpiadores;
     public TargetUrgencias[] targetLimpiadoresSala;
     public TargetUrgencias[] targetEspera;
-    public TargetUrgencias[] targetEsperaPaciente;
+    public TargetUrgencias[] targetMostradorPaciente;
     public TargetUrgencias[] targetColaDentro;
     public TargetUrgencias[] targetColaFuera;
-    public TargetUrgencias[] targetMostradorPaciente;
     public TargetUrgencias[] asientos;
     public TargetUrgencias[] banhos;
 
@@ -76,8 +75,9 @@ public class Mundo: MonoBehaviour
     private float spawnMaxTime = 0;
     private float spawnMinTime = 9;
     private int contPacientes = 0;
-    public int aforo;
-    public int aforoMax = 50;
+    public bool aforo;
+    public int aforoMax = 4;
+    public int asientosOcupados = 0;
     //public bool ponerSalaSucia = false;
 
 
@@ -133,7 +133,7 @@ public class Mundo: MonoBehaviour
         }
 
         Sala espera = new Sala(TipoSala.ESPERA, ID);
-        espera.posicionPaciente = targetEsperaPaciente[0];
+        espera.posicionPaciente = targetMostradorPaciente[0];
         espera.posicionProfesional = targetEspera[0];
         espera.posicionProfesionalSala = targetEspera[2];
         espera.posicionLimpiador = targetLimpiadoresSala[targetLimpiadoresSala.Length-1];
@@ -279,16 +279,15 @@ public class Mundo: MonoBehaviour
         ComprobarLibre(listaEsperaCirugia, salas.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA)));
         ComprobarLibre(listaEsperaEnfermeria, salas.FindAll((s) => s.tipo.Equals(TipoSala.ENFERMERIA)));
         LlamarLimpiadores();
-        /*
-        if (ponerSalaSucia)
+
+        aforo = false;
+        for (int i = 0; i < targetColaDentro.Length; i++)
         {
-            ponerSalaSucia = false;
-            salas[0].porcentajeSuciedad = 80;
-            salas[0].libre = false;
-            salas[1].porcentajeSuciedad = 80;
-            salas[1].libre = false;
+            if (targetColaDentro[i].libre)
+            {
+                aforo = true;
+            }
         }
-        */
     }
 
     public void CrearProfesionales()
@@ -424,23 +423,10 @@ public class Mundo: MonoBehaviour
             yield return new WaitUntil(()=>contPacientes < MAX_PACIENTES);
             contPacientes++;
             Paciente nuevo= Instantiate(prefabPaciente, casaPaciente.transform.position,Quaternion.identity).GetComponent<Paciente>();
-            int enfermedad = (int)Random.Range(0, enfermedades.Count);
+            int enfermedad = (int)Random.Range(0, enfermedades.Count-4);
             Enfermedad aux = enfermedades[enfermedad];
             nuevo.setEnfermedad(aux, emoticonoEnfermedad[(int)aux.tipoEnfermedad]);
             
-        }
-    }
-
-    public bool hayAforo()
-    {
-        if (aforo < aforoMax)
-        {
-            aforo++;
-            return true;
-        }
-        else
-        {
-            return false;
         }
     }
 }
