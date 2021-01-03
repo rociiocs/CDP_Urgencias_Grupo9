@@ -2182,7 +2182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a9636f68159e8f48be0167cca2f74d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  libre: 1
+  libre: 0
   ocupado: 0
   actual: {fileID: 0}
 --- !u!1001 &161149793
@@ -17321,7 +17321,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a9636f68159e8f48be0167cca2f74d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  libre: 1
+  libre: 0
   ocupado: 0
   actual: {fileID: 0}
 --- !u!1 &1612333011

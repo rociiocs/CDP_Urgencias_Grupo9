@@ -93,14 +93,12 @@ public class Celador : MonoBehaviour
 
         //Create transitions
         myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, irPuestoTrabajo);
-        myFSM.CreateTransition("llegar puesto trabajo mostrador", irPuestoTrabajo, llegadaPuesto, mostrador);
-        myFSM.CreateTransition("llegar puesto trabajo sala", irPuestoTrabajo, llegadaPuesto, salaState);
+        myFSM.CreateTransition("llegar puesto trabajo", irPuestoTrabajo, llegadaPuesto, turnoSala? salaState: mostrador);
         myFSMMostrador.CreateTransition("llega paciente", esperarPaciente, pacienteAtender, atendiendoPaciente);
         myFSMSala.CreateTransition("llega urgente", paseandoSala, urgenteAtender, atendiendoUrgente);
         myFSMMostrador.CreateTransition("atencion completada", atendiendoPaciente, terminarAtender, esperarPaciente);
         myFSMSala.CreateTransition("urgente completada", atendiendoUrgente, terminarUrgente, paseandoSala);
-        myFSM.CreateTransition("cambio de turnoMS", mostrador, cambioTurno, esperandoCompañero);//No se si hay alguna forma de hacerlo bidireccional
-        myFSM.CreateTransition("cambio de turnoSM", salaState, cambioTurno, esperandoCompañero);//No se si hay alguna forma de hacerlo bidireccional
+        myFSM.CreateExitTransition("cambio de turno", turnoSala? salaState: mostrador, cambioTurno, esperandoCompañero);
         myFSM.CreateTransition("hueco libre", esperandoCompañero, huecoLibre, irPuestoTrabajo);
         myFSM.CreateTransition("terminada jornada mostrador", mostrador, terminadaJornada, irCasa);
         myFSM.CreateTransition("terminada jornada sala", salaState, terminadaJornada, irCasa);
@@ -112,10 +110,9 @@ public class Celador : MonoBehaviour
     void Update()
     {
         myFSM.Update();
-        for(int i=0; i<sala.posicionMostradorProfesional.Length; i++)
-        {
-            //Debug.Log("Mostrador " + i + sala.posicionMostradorProfesional[i].libre);
-        }
+        myFSMMostrador.Update();
+        myFSMSala.Update();
+        Debug.Log(myFSM.GetCurrentState().Name);
         if (myFSM.GetCurrentState().Name.Equals(casa.Name))
         {
             //Si el puesto de trabajo está libre
@@ -129,6 +126,7 @@ public class Celador : MonoBehaviour
                         idMostrador = i;
                         targetUrgenciasMostrador = sala.posicionMostradorProfesional[i];
                         targetPaciente = sala.posicionMostradorPaciente[i];
+                        mundo.targetMostradorPaciente[i].libre=true;
                         myFSM.Fire("comienza jornada");
                         sala.posicionMostradorProfesional[i].libre = false;
                         return;
@@ -159,7 +157,7 @@ public class Celador : MonoBehaviour
     private void irPuestoTrabajoAction()
     {
         //Nav Mesh ir al target puesto
-        sala.libre = false;
+        //sala.libre = false;
         if (!turnoSala)
         {
             targetUrgenciasMostrador.libre = false;
@@ -204,7 +202,6 @@ public class Celador : MonoBehaviour
     //REVISAR, NO ESTÁ ENCONTRANDO LOS HUECOS LIBRES
     private bool ComprobarLibre()
     {
-
         if (!turnoSala)
         {
             targetUrgenciasMostrador.libre = true;
