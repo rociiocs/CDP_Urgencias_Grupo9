@@ -295,6 +295,7 @@ public class Mundo: MonoBehaviour
     {
         for(int i=0; i < numCeladores; i++)
         {
+            prefabCelador.GetComponent<Celador>().turnoSala = !prefabCelador.GetComponent<Celador>().turnoSala;
             Personaje nuevo = Instantiate(prefabCelador, casa.transform.position,Quaternion.identity).GetComponent<Personaje>();
             nuevo.nombre = "Celador " + i;
             sc.AnhadirProfesional(nuevo);

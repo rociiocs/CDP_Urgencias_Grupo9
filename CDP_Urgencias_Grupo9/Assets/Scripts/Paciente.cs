@@ -12,6 +12,7 @@ public class Paciente : MonoBehaviour
     // PROVISIONAL ENFERMERO
     //referencias
     public Image emoticono;
+    public Sprite emoMuerto;
     private Personaje personaje;
     public Enfermedad enfermedad;
     public bool tieneBote;
@@ -24,6 +25,9 @@ public class Paciente : MonoBehaviour
     int idPasoActual;
     Paso pasoActual;
     Mundo mundo;
+    //Variables para muerte
+    bool morirse;
+    bool fade=true;
     //Maquina de estados
     StateMachineEngine myFSM;
     StateMachineEngine myFSMVivo;
@@ -36,6 +40,7 @@ public class Paciente : MonoBehaviour
     State casa;
     State vivo; //Submáquina
     State muerto;
+    State salirVivo;
 
     //Urgente
     State acudirCeladorSala;
@@ -93,8 +98,9 @@ public class Paciente : MonoBehaviour
         myFSMEsperandoSala = new StateMachineEngine(BehaviourEngine.IsASubmachine);
 
         //Create states
-        casa = myFSM.CreateEntryState("casa", () => Debug.Log("encasa"));
-        muerto = myFSM.CreateState("muerto");
+        casa = myFSM.CreateEntryState("casa");//, () => Debug.Log("encasa"));
+        muerto = myFSM.CreateState("muerto", () => morirse = true);
+        salirVivo= myFSM.CreateState("salirVivo", muertoAction);
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(gameObject); });
 
         //Submáquina vivo
@@ -210,7 +216,7 @@ public class Paciente : MonoBehaviour
         //Mirar si hay problemas entre dos estados de máquinas diferentes
         myFSMVivo.CreateTransition("he llegado a casa", yendoCasa, heLlegado, casaFin);    
 
-        myFSM.CreateTransition("morirse", vivo, heMuerto, muerto);   
+        myFSM.CreateTransition("morirse", vivo, heMuerto, salirVivo);   
         myFSM.CreateTransition("desaparecer", muerto, animacionMuerto, casaFin);   
         myFSMColaFuera.CreateTransition("hay hueco libre", esperandoCola, hayHueco, avanzandoCola);   
         myFSMColaFuera.CreateTransition("he avanzado", avanzandoCola, heAvanzado, esperandoCola);   
@@ -251,16 +257,40 @@ public class Paciente : MonoBehaviour
         myFSMColaFuera.Update();
         myFSMEsperandoSala.Update();
         myFSMVivo.Update();
+        
 
+        if (morirse)
+        {
+            personaje.Morirse();
+            StartCoroutine(Die());
+            if (fade == true)
+            {
+                //Se coge el material y se va bajando el alpha hasta que llegue a cero, entonces se detiene con el booleano
+                Color oColor = GetComponentInChildren<SkinnedMeshRenderer>().material.color;
+                float fadeAmount = oColor.a - (0.5f * Time.deltaTime);
+                oColor = new Color(oColor.r, oColor.g, oColor.b, fadeAmount);
+                GetComponentInChildren<SkinnedMeshRenderer>().material.color = oColor;
+                if (oColor.a <= 0)
+                {
+                    fade = false;
+                    morirse = false;
+                }
+            }
+        }
+        
         //Debug.Log("fsm" + myFSM.GetCurrentState().Name);
         //Debug.Log("fsmVivo " + myFSMVivo.GetCurrentState().Name);
         //Debug.Log("fsmColaFuera " + myFSMColaFuera.GetCurrentState().Name);
         //Debug.Log("fsmColadentro " + myFSMColaDentro.GetCurrentState().Name);
     }
 
-    private void vivoAction()
+    private void muertoAction()
     {
-
+        emoticono.sprite = emoMuerto;
+        personaje.myAgent.Stop();
+        personaje.muerto = true;
+        personaje.myAgent.enabled = false;
+        myFSMVivo.Fire(myFSMVivo.CreateExitTransition("salir vivo", myFSMVivo.GetCurrentState(), myFSMVivo.CreatePerception<ValuePerception>(() => morirse == true), muerto));
     }
     public void setEnfermedad(Enfermedad en, Sprite emo)
     {
@@ -272,7 +302,7 @@ public class Paciente : MonoBehaviour
     }
     private void avanzandoColaAction()
     {
-        Debug.Log("avanzandocolaaction");
+        //Debug.Log("avanzandocolaaction");
         if (targetUrgencias != null)
         {
             targetUrgencias.libre = true;
@@ -285,38 +315,25 @@ public class Paciente : MonoBehaviour
 
     private void avanzandoColaDentroAction()
     {
-        Debug.Log("avanzandocolaadentroction");
+        //Debug.Log("avanzandocolaadentroction");
         targetUrgencias.libre = true;
         targetUrgencias = mundo.targetColaDentro[targetUrgenciasID-1];
         targetUrgenciasID--;
         targetUrgencias.libre = false;
         GoTo(targetUrgencias);
     }
-    //Las cosas de morirse
-    //Se llama con un StartCoroutine(Die()), justo antes de hacer lo siguiente en el update
-    /*if (fade == true)
-        {
-        //Se coge el material y se va bajando el alpha hasta que llegue a cero, entonces se detiene con el booleano
-            Color oColor = GetComponentInChildren<SkinnedMeshRenderer>().material.color;
-    float fadeAmount = oColor.a - (0.2f * Time.deltaTime);
-    oColor = new Color(oColor.r, oColor.g, oColor.b, fadeAmount);
-    GetComponentInChildren<SkinnedMeshRenderer>().material.color = oColor;
-            if (oColor.a <= 0)
-            {
-                fade = false;
-            }
-        }*/
+    
     IEnumerator Die()
     {
         //Los dos primeros segundos son maomenos el tiempo que tarde en segundos en caer al suelo durante la animación de morirse
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
         //Se coge la posición para ir modificándola
         var t = transform.position;
         //Se le hace ascender a esa velocidad
-        t.y += 3 * Time.deltaTime;
+        t.y += 1.5f * Time.deltaTime;
         transform.position = t;
-        //Después de este tiempo se destruye, para dar tiempo a desvanecer al personaje
+        //Después de este tiempo se indica que ha acabado, para dar tiempo a desvanecer al personaje
         yield return new WaitForSeconds(2.5f);
-        Destroy(gameObject);
+        myFSM.Fire("desaparecer");
     }
 }

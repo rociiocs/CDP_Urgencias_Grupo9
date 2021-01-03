@@ -95,16 +95,17 @@ public class Celador : MonoBehaviour
         myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, irPuestoTrabajo);
         myFSM.CreateTransition("llegar puesto trabajo mostrador", irPuestoTrabajo, llegadaPuesto, mostrador);
         myFSM.CreateTransition("llegar puesto trabajo sala", irPuestoTrabajo, llegadaPuesto, salaState);
-        myFSM.CreateTransition("llega paciente", esperarPaciente, pacienteAtender, atendiendoPaciente);
-        myFSM.CreateTransition("llega urgente", paseandoSala, urgenteAtender, atendiendoUrgente);
-        myFSM.CreateTransition("atencion completada", atendiendoPaciente, terminarAtender, esperarPaciente);
-        myFSM.CreateTransition("urgente completada", atendiendoUrgente, terminarUrgente, paseandoSala);
+        myFSMMostrador.CreateTransition("llega paciente", esperarPaciente, pacienteAtender, atendiendoPaciente);
+        myFSMSala.CreateTransition("llega urgente", paseandoSala, urgenteAtender, atendiendoUrgente);
+        myFSMMostrador.CreateTransition("atencion completada", atendiendoPaciente, terminarAtender, esperarPaciente);
+        myFSMSala.CreateTransition("urgente completada", atendiendoUrgente, terminarUrgente, paseandoSala);
         myFSM.CreateTransition("cambio de turnoMS", mostrador, cambioTurno, salaState);//No se si hay alguna forma de hacerlo bidireccional
         myFSM.CreateTransition("cambio de turnoSM", salaState, cambioTurno, mostrador);//No se si hay alguna forma de hacerlo bidireccional
         myFSM.CreateTransition("hueco libre", esperandoCompañero, huecoLibre, irPuestoTrabajo);
-        myFSM.CreateTransition("cambio directoMS", esperarPaciente, huecoYTurno, paseandoSala);//No se si hay alguna forma de hacerlo bidireccional
-        myFSM.CreateTransition("cambio directoSM", paseandoSala, huecoYTurno, esperarPaciente);
-        myFSM.CreateTransition("terminada jornada", esperarPaciente, terminadaJornada, irCasa);
+        myFSM.CreateTransition("cambio directoMS", mostrador, huecoYTurno, salaState);//No se si hay alguna forma de hacerlo bidireccional
+        myFSM.CreateTransition("cambio directoSM", salaState, huecoYTurno, mostrador);//No se si hay alguna forma de hacerlo bidireccional
+        myFSM.CreateTransition("terminada jornada mostrador", mostrador, terminadaJornada, irCasa);
+        myFSM.CreateTransition("terminada jornada sala", salaState, terminadaJornada, irCasa);
         myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casaFin);
 
     }

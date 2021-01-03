@@ -598,6 +598,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nombre: 
+  myAgent: {fileID: 0}
   haLlegado: 0
 --- !u!114 &1072484280634780728
 MonoBehaviour:
@@ -613,6 +614,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetBanho: {fileID: 0}
   emoticono: {fileID: 7442635388730148812}
+  emoMuerto: {fileID: 21300000, guid: 850aaf6b59e49b14a8294d80e3077ed1, type: 3}
   tieneBote: 0
   urgente: 0
   estoyVivo: 1
