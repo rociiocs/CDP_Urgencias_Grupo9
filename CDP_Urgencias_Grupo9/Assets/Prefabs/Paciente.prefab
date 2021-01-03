@@ -599,6 +599,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nombre: 
   myAgent: {fileID: 0}
+  muerto: 0
   haLlegado: 0
 --- !u!114 &1072484280634780728
 MonoBehaviour:

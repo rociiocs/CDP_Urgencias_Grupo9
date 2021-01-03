@@ -175,7 +175,12 @@ public class Paciente : MonoBehaviour
         Perception hayHuecoDentro = myFSMColaDentro.CreatePerception<ValuePerception>(() => targetUrgenciasID!=0&&mundo.targetColaDentro[targetUrgenciasID - 1].libre);
         Perception heAvanzadoDentro = myFSMColaDentro.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         //Añadir para ver si hay algún mostrador libre
-        Perception hayMostradorLibre = myFSMColaDentro.CreatePerception<ValuePerception>(() => mundo.targetMostradorPaciente[0].libre);
+
+
+        //*HACE FALTA COMPROBAR QUE EL CELADOR DE SALA ESTÉ LIBRE Y HACER SU COLA////
+
+
+        Perception hayMostradorLibre = myFSMColaDentro.CreatePerception<ValuePerception>(() => mostradorLibre());
         //El celador pone el push de ser atendido
         Perception heSidoAtendido = myFSMVivo.CreatePerception<PushPerception>();
         //Añadir como ver si hay algún target de asiento libre
@@ -267,7 +272,8 @@ public class Paciente : MonoBehaviour
             StartCoroutine(Die());
             if (fade == true)
             {
-                //Se coge el material y se va bajando el alpha hasta que llegue a cero, entonces se detiene con el booleano
+                //Se coge el material y se va bajando el alpha hasta que llegue a cero, entonces se detiene con el 
+                GetComponentInChildren<SkinnedMeshRenderer>().material.shader = Shader.Find("Transparent/Diffuse");
                 Color oColor = GetComponentInChildren<SkinnedMeshRenderer>().material.color;
                 float fadeAmount = oColor.a - (0.5f * Time.deltaTime);
                 oColor = new Color(oColor.r, oColor.g, oColor.b, fadeAmount);
@@ -338,11 +344,8 @@ public class Paciente : MonoBehaviour
 
     private void siendoAtendidoCeladorAction()
     {
-        targetUrgencias.libre = true;
-        targetUrgencias = mundo.targetMostradorPaciente[0];
-        GoTo(targetUrgencias);
-        targetUrgencias.libre = false;
-        targetUrgencias.ocupado = true;
+
+        
         //myFSMVivo.Fire("esperando sala");
     }
     private void entrandoCentroAction()
@@ -382,6 +385,24 @@ public class Paciente : MonoBehaviour
                 break;
             }
         }
+    }
+    //REVISAR
+    private bool mostradorLibre()
+    {
+        for(int i=0; i< mundo.targetMostradorPaciente.Length; i++)
+        {
+            if (mundo.targetMostradorPaciente[i].libre)
+            {
+                mundo.targetMostradorPaciente[i].libre = false;
+                targetUrgencias.libre = true;
+                targetUrgencias = mundo.targetMostradorPaciente[i];
+                targetUrgenciasID = i;
+                GoTo(targetUrgencias);
+                targetUrgencias.ocupado = true;
+                return true;
+            }
+        }
+        return false;
     }
 
     IEnumerator Die()

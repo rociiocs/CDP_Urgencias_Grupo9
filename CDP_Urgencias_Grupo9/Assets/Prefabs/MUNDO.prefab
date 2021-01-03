@@ -131,11 +131,15 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  targetEspera:
+  targetEsperaMostrador:
   - {fileID: 0}
   - {fileID: 0}
+  targetEsperaSala:
   - {fileID: 0}
-  targetEsperaPaciente:
+  targetMostradorPaciente:
+  - {fileID: 0}
+  - {fileID: 0}
+  targetSalaPaciente:
   - {fileID: 0}
   targetColaDentro:
   - {fileID: 0}
@@ -150,9 +154,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  targetMostradorPaciente:
   - {fileID: 0}
   - {fileID: 0}
   asientos:
@@ -177,6 +178,7 @@ MonoBehaviour:
   casaPaciente: {fileID: 0}
   aforo: 0
   aforoMax: 50
+  asientosOcupados: 0
 --- !u!1001 &1738233438898493803
 PrefabInstance:
   m_ObjectHideFlags: 0

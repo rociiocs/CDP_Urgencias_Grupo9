@@ -20,7 +20,6 @@ public class Sala
     public bool heLlamadoAlMundo;
     public TargetUrgencias posicionPaciente;
     public TargetUrgencias posicionProfesional;
-    public TargetUrgencias posicionProfesionalSala;
     public TargetUrgencias posicionLimpiador;
     //private float limiteSuciedad = 100;
     //private float umbral = 65;
