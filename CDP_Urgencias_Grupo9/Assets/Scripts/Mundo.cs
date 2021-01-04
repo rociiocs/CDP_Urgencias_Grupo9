@@ -389,34 +389,40 @@ public class Mundo: MonoBehaviour
     }
     private void ComprobarLibre(List<Paciente> listaEspera, List<Sala> salas)
     {
-        if (listaEspera.Count != 0)
+      
+        foreach (Sala s in salas)
         {
-            foreach (Sala s in salas)
+            if (listaEspera.Count != 0)
             {
-                if (s.libre)
+                if ((s.libre)&&(!s.posicionProfesional.libre))
                 {
-                   Paciente llamado= listaEspera[0];
-                   listaEspera.RemoveAt(0);
-                   llamado.GoTo(s.posicionPaciente);
+                    Paciente llamado = listaEspera[0];
+                    s.libre = false;
+                    listaEspera.RemoveAt(0);
+                    llamado.targetUrgencias = s.posicionPaciente;
+
+                    llamado.SalaAsignadaLibre.Fire();
+                    //deberia decrile con un valor o un fire que ha sido llamado?
                 }
             }
         }
     }
+    
     public void AddPacienteEnfermeria(Paciente paciente)
     {
         listaEsperaEnfermeria.Add(paciente);
-        listaEsperaEnfermeria.Sort();//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
+        listaEsperaEnfermeria.Sort(new ComparadorPrioridad());//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
     }
     public void AddPacienteMedico(Paciente paciente)
     {
         listaEsperaMedico.Add(paciente);
-        listaEsperaMedico.Sort();//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
+        listaEsperaMedico.Sort(new ComparadorPrioridad());//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
 
     }
     public void AddPacienteCirugia(Paciente paciente)
     {
         listaEsperaCirugia.Add(paciente);
-        listaEsperaCirugia.Sort();//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
+        listaEsperaCirugia.Sort(new ComparadorPrioridad());//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
     }
     IEnumerator SpawnPacientes()
     {
@@ -427,6 +433,7 @@ public class Mundo: MonoBehaviour
             yield return new WaitUntil(()=>contPacientes < MAX_PACIENTES);
             contPacientes++;
             Paciente nuevo= Instantiate(prefabPaciente, casaPaciente.transform.position,Quaternion.identity).GetComponent<Paciente>();
+            sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
             int enfermedad = (int)Random.Range(0, enfermedades.Count-4);
             Enfermedad aux = enfermedades[enfermedad];
             nuevo.setEnfermedad(aux, emoticonoEnfermedad[(int)aux.tipoEnfermedad]);

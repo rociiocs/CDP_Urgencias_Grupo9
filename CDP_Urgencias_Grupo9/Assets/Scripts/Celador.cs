@@ -8,7 +8,7 @@ public class Celador : MonoBehaviour
     //Variables
     public int timeJornada = 30;
     int timeAtender = 5;
-    int timeTurno = 10;
+    int timeTurno = 1000;
     int idMostrador;
     int idSala;
     public bool turnoSala;
@@ -44,6 +44,11 @@ public class Celador : MonoBehaviour
     State paseandoSala;
     State casaFin;
 
+
+    //PRUEBAS DE CELTIA NI CASO
+    public TargetUrgencias mostradorCel;
+    //PRUEBAS DE CELTIA NI CASO
+
     // Start is called before the first frame update
     void Start()
     {
@@ -56,22 +61,30 @@ public class Celador : MonoBehaviour
         sala =  (SalaEspera) mundo.salas.Find((s) => s.tipo.Equals(TipoSala.ESPERA));
 
         //Create states
-        mostrador = myFSM.CreateSubStateMachine("mostrador", myFSMMostrador);
-        salaState = myFSM.CreateSubStateMachine("salaState", myFSMSala);
+     
 
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);//Se emplea no solo al llegar sino para cambiar de turno
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSMMostrador.CreateEntryState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); turnoSala = false; });
+        esperarPaciente = myFSMMostrador.CreateEntryState("esperarPaciente", esperandoPacienteActionMostrador);
         atendiendoPaciente = myFSMMostrador.CreateState("atendiendoPaciente", atendiendoPacienteAction);
         esperandoCompañero = myFSM.CreateState("esperandoCompañero");
         atendiendoUrgente = myFSMSala.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
         paseandoSala = myFSMSala.CreateEntryState("paseandoSala", () => esperandoPacienteAction());
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarCelador(personaje.nombre); Destroy(this.gameObject); });
-
+        mostrador = myFSM.CreateSubStateMachine("mostrador", myFSMMostrador);
+        salaState = myFSM.CreateSubStateMachine("salaState", myFSMSala);
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => targetPaciente.ocupado);
+
+
+        //PRUEBAS DE CELTIA NI CASO
+        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => !mostradorCel.libre);//!targetPaciente.libre);
+
+
+
+        //PRUEBAS DE CELTIA NI CASO
+
         //Si hay un paciente urgente que atender
         Perception urgenteAtender = myFSMSala.CreatePerception<ValuePerception>(() => targetPacienteSala.ocupado);
         //Si se produce cambio de turno
@@ -109,10 +122,11 @@ public class Celador : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+       
         myFSM.Update();
         myFSMMostrador.Update();
         myFSMSala.Update();
-        Debug.Log(myFSM.GetCurrentState().Name);
+  
         if (myFSM.GetCurrentState().Name.Equals(casa.Name))
         {
             //Si el puesto de trabajo está libre
@@ -124,6 +138,11 @@ public class Celador : MonoBehaviour
                     if (sala.posicionMostradorProfesional[i].libre)
                     {
                         idMostrador = i;
+
+                        //PRUEBAS DE CELTIA NI CASO
+                        mostradorCel = mundo.targetMostradorPaciente[i];
+                        mostradorCel.ocupado = true;
+                        //PRUEBAS DE CELTIA NI CASO
                         targetUrgenciasMostrador = sala.posicionMostradorProfesional[i];
                         targetPaciente = sala.posicionMostradorPaciente[i];
                         mundo.targetMostradorPaciente[i].libre=true;
@@ -184,20 +203,59 @@ public class Celador : MonoBehaviour
         paciente = targetPaciente.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;
         PutEmoji(emoAtender);
+     
         //AÑADIR AL PACIENTE A LAS COLAS DEL MUNDO PERTINENTES
     }
     private void esperandoPacienteAction()
     {
         turnoSala = true;
-        paciente.myFSMVivo.Fire("esperar sala libre");
+        if (paciente != null)
+        {
+            paciente.heSidoAtendido.Fire();
+        }
+
         PutEmoji(emoEsperarPaciente);
+    }
+    private void mandarPacienteListaEspera()
+    {
+        switch (paciente.pasoActual)
+        {
+            case Paso.Cirujano:
+                mundo.AddPacienteCirugia(paciente);
+                break;
+            case Paso.Enfermeria:
+                mundo.AddPacienteEnfermeria(paciente);
+                break;
+            case Paso.Medico:
+                mundo.AddPacienteMedico(paciente);
+                break;
+            default:
+                Debug.Log("Que cona fas aqui");
+                break;
+
+            }
+    }
+    private void esperandoPacienteActionMostrador()
+    {
+      
+            PutEmoji(emoEsperarPaciente);
+            
+            turnoSala = false;
+            if (paciente != null)
+            {
+                mandarPacienteListaEspera();
+                paciente.heSidoAtendido.Fire();
+                
+            }
+          
+
     }
     private void atendiendoUrgenteAction()
     {
         paciente = targetPacienteSala.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;
         PutEmoji(emoAtender);
-        paciente.myFSMVivo.Fire("esperar sala libre");
+        //paciente.myFSMVivo.Fire("esperar sala libre");
     }
     //REVISAR, NO ESTÁ ENCONTRANDO LOS HUECOS LIBRES
     private bool ComprobarLibre()

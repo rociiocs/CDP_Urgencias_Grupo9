@@ -3,6 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+public class ComparadorPrioridad : Comparer<Paciente>
+{
+    public override int Compare(Paciente x, Paciente y)
+    {
+        //Mayor tiempo de espera, va antes
+        if (x.enfermedad.prioridad == y.enfermedad.prioridad)
+        {
+            return (int)((int)y.timeEspera-(int)x.timeEspera );
+        }
+        else
+        {
+            //menor prioridad, va antes
+            return x.enfermedad.prioridad - y.enfermedad.prioridad;
+        }
+    }
+}
 public class Paciente : MonoBehaviour
 {
 
@@ -22,8 +39,11 @@ public class Paciente : MonoBehaviour
     public int targetUrgenciasID;
     public int timerOrina = 5;
     public int timerAnimacionMorir = 5;
+    //COLA DE PRIORIDADES
+    public float timeEspera = 0;
+    //
     int idPasoActual;
-    Paso pasoActual;
+    public Paso pasoActual;
     Mundo mundo;
     //Variables para muerte
     bool morirse;
@@ -83,7 +103,11 @@ public class Paciente : MonoBehaviour
     State tomandoMuestra;
     State volviendoSitio;
 
-
+    //Para que se pueda disparar
+    public Perception SalaAsignadaLibre;
+    public Perception heSidoAtendido;
+    public Perception todaviaTengoQueSerTratado;
+    public Perception tengoQueHacerAnalisisOrina;
     void Start()
     {
         personaje = GetComponent<Personaje>();
@@ -112,8 +136,8 @@ public class Paciente : MonoBehaviour
         entrandoCentro = myFSMVivo.CreateState("entrandoCentro", entrandoCentroAction);
         entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente");
         siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano");
-        siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta");
-        yendoSala = myFSMVivo.CreateState("yendoSala");
+        siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta",()=> Debug.Log("SIENDO ATENDIDO"));
+        yendoSala = myFSMVivo.CreateState("yendoSala",()=>GoTo(targetUrgencias));
         yendoUCI = myFSMVivo.CreateState("yendoUCI");
         llegadaUCI = myFSMVivo.CreateState("llegadaUCI");
         yendoCasa = myFSMVivo.CreateState("yendoCasa");
@@ -139,14 +163,15 @@ public class Paciente : MonoBehaviour
 
         //Analisis de orina
 
-        yendoBaño = myFSMAnalisisOrina.CreateEntryState("yendoBaño");
+        yendoBaño = myFSMAnalisisOrina.CreateEntryState("yendoBaño", irBanhoAction);
         tomandoMuestra = myFSMAnalisisOrina.CreateState("tomandoMuestra");
-        volviendoSitio = myFSMAnalisisOrina.CreateState("volviendoSitio");
+        volviendoSitio = myFSMAnalisisOrina.CreateState("volviendoSitio",()=>GoTo(targetUrgencias));
 
         //Esperando sala espera
 
-        esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie", () => targetUrgencias.libre = true);
-        ocupandoAsiento = myFSMEsperandoSala.CreateState("ocupandoAsiento", ocupandoAsientoAction);
+        esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie",  () => GoTo(mundo.asientos[0]));//targetUrgencias.libre = true);
+
+         ocupandoAsiento = myFSMEsperandoSala.CreateState("ocupandoAsiento", ocupandoAsientoAction);
 
 
         Perception estoyVivoPerception = myFSM.CreatePerception<ValuePerception>(() => estoyVivo);
@@ -156,7 +181,7 @@ public class Paciente : MonoBehaviour
         //El celador hace push al personaje
         Perception atendidoCelador = myFSMVivo.CreatePerception<PushPerception>(); 
         //El mundo hace push al paciente cuando hay sala libre
-        Perception SalaAsignadaLibre = myFSMVivo.CreatePerception<PushPerception>(); 
+         SalaAsignadaLibre = myFSMVivo.CreatePerception<PushPerception>(); 
         Perception heLlegadoSala = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado); 
         //El cirujano lo manda a la UCI
         Perception soyGrave = myFSMVivo.CreatePerception<PushPerception>(); 
@@ -182,28 +207,28 @@ public class Paciente : MonoBehaviour
 
         Perception hayMostradorLibre = myFSMColaDentro.CreatePerception<ValuePerception>(() => mostradorLibre());
         //El celador pone el push de ser atendido
-        Perception heSidoAtendido = myFSMVivo.CreatePerception<PushPerception>();
+        heSidoAtendido = myFSMVivo.CreatePerception<PushPerception>();
         //Añadir como ver si hay algún target de asiento libre
         Perception asientoLibre = myFSMEsperandoSala.CreatePerception<ValuePerception>(() => mundo.asientosOcupados < mundo.asientos.Length);
         //Push por el enfermero
-        Perception tengoQueHacerAnalisisOrina = myFSMVivo.CreatePerception<PushPerception>();
+         tengoQueHacerAnalisisOrina = myFSMVivo.CreatePerception<PushPerception>();
 
         Perception hellegadoBaño = myFSMAnalisisOrina.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         Perception heTomadoMuestra = myFSMAnalisisOrina.CreatePerception<TimerPerception>(timerOrina);
         Perception hellegadoSitio = myFSMAnalisisOrina.CreatePerception<ValuePerception>(() => personaje.haLlegado);
 
         //El profesional hace push para que vuelvas a sala de espera
-        Perception todaviaTengoQueSerTratado = myFSMVivo.CreatePerception<PushPerception>();
+         todaviaTengoQueSerTratado = myFSMVivo.CreatePerception<PushPerception>();
         Perception animacionMuerto = myFSM.CreatePerception<TimerPerception>(timerAnimacionMorir);
-
-
-
-        //Submaquinas
         esperandoSalaEspera = myFSMVivo.CreateSubStateMachine("esperandoSalaEspera", myFSMEsperandoSala);
         vivo = myFSM.CreateSubStateMachine("vivo", myFSMVivo, yendoCentro);
         haciendoAnalisisOrina = myFSMVivo.CreateSubStateMachine("haciendoAnalisisOrina", myFSMAnalisisOrina);
         haciendoColaDentro = myFSMVivo.CreateSubStateMachine("haciendoColaDentro", myFSMColaDentro);
         haciendoColaFuera = myFSMVivo.CreateSubStateMachine("haciendoColaFuera", myFSMColaFuera, esperandoCola);
+
+
+        //Submaquinas
+
         //Transiciones
         myFSM.CreateTransition("aparecer", casa, estoyVivoPerception, vivo);
         myFSMVivo.CreateTransition("he llegado centro y soy urgente", yendoCentro, soyUrgente, entrandoCentroUrgente);
@@ -235,16 +260,17 @@ public class Paciente : MonoBehaviour
         myFSMVivo.CreateTransition("esperando sala", siendoAtendidoCelador, heSidoAtendido, esperandoSalaEspera);
         myFSMEsperandoSala.CreateTransition("hay asiento libre", esperandoDePie, asientoLibre, ocupandoAsiento);
         myFSMVivo.CreateExitTransition("hay sala libre", ocupandoAsiento, SalaAsignadaLibre, yendoSala);
-        myFSMVivo.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala); myFSMVivo.CreateTransition("llegada a sala y siendo atendido", yendoSala, heLlegadoSala, siendoAtendidoConsulta);
+        myFSMVivo.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala);
+        myFSMVivo.CreateTransition("llegada a sala y siendo atendido", yendoSala, heLlegadoSala, siendoAtendidoConsulta);
         myFSMVivo.CreateTransition("ir hacer analisis orina", siendoAtendidoConsulta, tengoQueHacerAnalisisOrina, haciendoAnalisisOrina);
         myFSMAnalisisOrina.CreateTransition("tomando muestra orina", yendoBaño, hellegadoBaño, tomandoMuestra);
         myFSMAnalisisOrina.CreateTransition("volver al sitio", tomandoMuestra, heTomadoMuestra, volviendoSitio);
-        myFSMAnalisisOrina.CreateTransition("volver a ser atendido", volviendoSitio, hellegadoSitio, siendoAtendidoConsulta);
+        myFSMAnalisisOrina.CreateExitTransition("volver a ser atendido", volviendoSitio, hellegadoSitio, siendoAtendidoConsulta);
         myFSMVivo.CreateTransition("volver a sala espera", siendoAtendidoConsulta, todaviaTengoQueSerTratado, yendoSalaEspera);
         myFSMVivo.CreateTransition("volver esperando sala", yendoSalaEspera, heLlegado, esperandoSalaEspera);
         myFSMVivo.CreateTransition("acudir a la UCI consulta", siendoAtendidoConsulta, soyGrave, yendoUCI);
         myFSMVivo.CreateTransition("acudir a casa consulta", siendoAtendidoConsulta, soyLeve, yendoCasa);
-
+  
     }
 
     public void GoTo( TargetUrgencias transform)// cambio de estado etc y al llegar al punto se cambia otra vez de estado
@@ -256,15 +282,26 @@ public class Paciente : MonoBehaviour
         idPasoActual++;
         pasoActual = enfermedad.pasos[idPasoActual];
     }
+    private void irBanhoAction()
+    {
+       GoTo(targetBanho);
+        Debug.Log("al baño");
+    }
     void Update()
     {
+        if (enfermedad.tipoEnfermedad.Equals(TipoEnfermedad.Cistitis))
+        {
+            Debug.Log(myFSM.GetCurrentState().Name);
+            Debug.Log(myFSMAnalisisOrina.GetCurrentState().Name);
+
+        }
         myFSM.Update();
         myFSMAnalisisOrina.Update();
         myFSMColaDentro.Update();
         myFSMColaFuera.Update();
         myFSMEsperandoSala.Update();
         myFSMVivo.Update();
-        
+        timeEspera += Time.deltaTime;
 
         if (morirse)
         {
@@ -391,9 +428,10 @@ public class Paciente : MonoBehaviour
     {
         for(int i=0; i< mundo.targetMostradorPaciente.Length; i++)
         {
-            if (mundo.targetMostradorPaciente[i].libre)
+            if ((mundo.targetMostradorPaciente[i].ocupado)&&(mundo.targetMostradorPaciente[i].libre))
             {
                 mundo.targetMostradorPaciente[i].libre = false;
+                mundo.targetMostradorPaciente[i].actual = personaje;
                 targetUrgencias.libre = true;
                 targetUrgencias = mundo.targetMostradorPaciente[i];
                 targetUrgenciasID = i;

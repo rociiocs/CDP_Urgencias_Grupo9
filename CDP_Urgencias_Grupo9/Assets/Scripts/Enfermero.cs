@@ -23,7 +23,7 @@ public class Enfermero : MonoBehaviour
 {
     //info
     StateMachineEngine myFSM;
-    float timeJornada = 10, timeAnimacionAtender = 3;
+    float timeJornada = 2000, timeAnimacionAtender = 3;
     public bool llevarLabFlag = false, jornadaFlag = false;
     Analisis currentAnalisis;
     //Referencias
@@ -57,7 +57,7 @@ public class Enfermero : MonoBehaviour
         State analisisPCR = myFSM.CreateState("analisisPCR", () => Atender(emoPCR)); //animacion y emoticonillo
         State suero = myFSM.CreateState("meterSuero", () => Atender(emoSuero));//animacion y emoticonillo;
         State laboratorio = myFSM.CreateState("llevarLab", () => { DespacharPaciente(); PutEmoji(emoLAB); personaje.GoTo(mundo.laboratorio); puestoTrabajo.libre = false; });
-        State darBote = myFSM.CreateState("darBote", () => { Atender(emoBote); currentPaciente.targetBanho = banhoTarget; });//Darle al paciente  animacion y emoticono
+        State darBote = myFSM.CreateState("darBote", () => { Atender(emoBote); currentPaciente.targetBanho = banhoTarget; currentPaciente.tengoQueHacerAnalisisOrina.Fire(); });//Darle al paciente  animacion y emoticono
         State examinarPaciente = myFSM.CreateState("examinar", () => ExaminarPaciente());//es un  micromomento
         State esperandoPacienteBanho = myFSM.CreateState("esperarBanho", () => PacienteABaño());
 
@@ -105,7 +105,7 @@ public class Enfermero : MonoBehaviour
     private void Atender(Sprite emoji)
     {
         PutEmoji(emoji);
-        currentPaciente = null;// mirar
+       
         // animacion 
     }
     private void PutEmoji(Sprite emoji)
@@ -160,6 +160,28 @@ public class Enfermero : MonoBehaviour
         if (currentPaciente != null)
         {  //  currentPaciente.Despachar();
            //meterle en la lista segun el paso en el que esté o al baño incluso! mirar
+            switch (currentPaciente.pasoActual)
+            {
+                case Paso.Cirujano:
+                    currentPaciente.todaviaTengoQueSerTratado.Fire();
+                    mundo.AddPacienteCirugia(currentPaciente);
+                    break;
+                case Paso.Enfermeria:
+                    currentPaciente.todaviaTengoQueSerTratado.Fire();
+                    mundo.AddPacienteEnfermeria(currentPaciente);
+                    break;
+                case Paso.Medico:
+                    currentPaciente.todaviaTengoQueSerTratado.Fire();
+                    mundo.AddPacienteMedico(currentPaciente);
+                    break;
+                case Paso.Casa:
+                    break;
+                    
+                default:
+                    Debug.Log("Que cona fas aqui");
+                    break;
+            }
+            
             currentPaciente = null;
 
         }
