@@ -65,11 +65,13 @@ public class Paciente : MonoBehaviour
     //Urgente
     State acudirCeladorSala;
     State esperandoSalaUrgente;
-    
+    State siendoAtendidoCelador;
+
     //No urgente
     State haciendoColaFuera; //Submáquina
     State haciendoColaDentro; //Submáquina
-    State siendoAtendidoCelador;
+    State siendoAtendidoCeladorMostrador;
+    
     State esperandoSalaEspera;
     State yendoSalaEspera;
     State haciendoAnalisisOrina; //Submáquina
@@ -108,6 +110,7 @@ public class Paciente : MonoBehaviour
     public Perception heSidoAtendido;
     public Perception todaviaTengoQueSerTratado;
     public Perception tengoQueHacerAnalisisOrina;
+    public Perception soyLeve;
     void Start()
     {
         personaje = GetComponent<Personaje>();
@@ -144,11 +147,13 @@ public class Paciente : MonoBehaviour
 
 
         //No urgentes
-        siendoAtendidoCelador = myFSMVivo.CreateState("siendoAtendidoCelador", siendoAtendidoCeladorAction);
+        siendoAtendidoCeladorMostrador = myFSMVivo.CreateState("siendoAtendidoCeladorMostrador", siendoAtendidoCeladorAction);
+
         yendoSalaEspera = myFSM.CreateState("yendoSalaEspera");
 
         //Urgentes
         acudirCeladorSala = myFSMVivo.CreateState("acudirCeladorSala");
+        siendoAtendidoCelador = myFSMVivo.CreateState("siendoAtendidoCelador", siendoAtendidoCeladorAction);
         esperandoSalaUrgente = myFSMVivo.CreateState("esperandoSalaUrgente");
         
         //Cola fuera
@@ -169,9 +174,9 @@ public class Paciente : MonoBehaviour
 
         //Esperando sala espera
 
-        esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie",  () => GoTo(mundo.asientos[0]));//targetUrgencias.libre = true);
+        esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie");//,  () => GoTo(mundo.asientos[0]));//targetUrgencias.libre = true);
 
-         ocupandoAsiento = myFSMEsperandoSala.CreateState("ocupandoAsiento", ocupandoAsientoAction);
+        ocupandoAsiento = myFSMEsperandoSala.CreateState("ocupandoAsiento", ocupandoAsientoAction);
 
 
         Perception estoyVivoPerception = myFSM.CreatePerception<ValuePerception>(() => estoyVivo);
@@ -186,7 +191,7 @@ public class Paciente : MonoBehaviour
         //El cirujano lo manda a la UCI
         Perception soyGrave = myFSMVivo.CreatePerception<PushPerception>(); 
         //El cirujano lo manda a la casa
-        Perception soyLeve = myFSMVivo.CreatePerception<PushPerception>(); 
+        soyLeve = myFSMVivo.CreatePerception<PushPerception>(); 
         //Si ha llegado a casa o a la uci
         Perception heLlegado = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         //Si he muerto, timer de la enfermedad
@@ -256,8 +261,8 @@ public class Paciente : MonoBehaviour
         myFSMVivo.CreateTransition("hacer cola dentro", entrandoCentro, noSoyUrgente, haciendoColaDentro);
         myFSMColaDentro.CreateTransition("hay hueco libre", esperandoColaDentro, hayHuecoDentro, avanzandoColaDentro);
         myFSMColaDentro.CreateTransition("he avanzado", avanzandoColaDentro, heAvanzadoDentro, esperandoColaDentro);
-        myFSMColaDentro.CreateExitTransition("hay mostrador libre", esperandoColaDentro, hayMostradorLibre, siendoAtendidoCelador);
-        myFSMVivo.CreateTransition("esperando sala", siendoAtendidoCelador, heSidoAtendido, esperandoSalaEspera);
+        myFSMColaDentro.CreateExitTransition("hay mostrador libre", esperandoColaDentro, hayMostradorLibre, siendoAtendidoCeladorMostrador);
+        myFSMVivo.CreateTransition("esperando sala", siendoAtendidoCeladorMostrador, heSidoAtendido, esperandoSalaEspera);
         myFSMEsperandoSala.CreateTransition("hay asiento libre", esperandoDePie, asientoLibre, ocupandoAsiento);
         myFSMVivo.CreateExitTransition("hay sala libre", ocupandoAsiento, SalaAsignadaLibre, yendoSala);
         myFSMVivo.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala);
@@ -289,12 +294,12 @@ public class Paciente : MonoBehaviour
     }
     void Update()
     {
-        if (enfermedad.tipoEnfermedad.Equals(TipoEnfermedad.Cistitis))
+        /*if (enfermedad.tipoEnfermedad.Equals(TipoEnfermedad.Cistitis))
         {
             Debug.Log(myFSM.GetCurrentState().Name);
             Debug.Log(myFSMAnalisisOrina.GetCurrentState().Name);
 
-        }
+        }*/
         myFSM.Update();
         myFSMAnalisisOrina.Update();
         myFSMColaDentro.Update();
@@ -335,6 +340,7 @@ public class Paciente : MonoBehaviour
                 personaje.sentarse();
             }
         }
+        //Debug.Log(myFSMVivo.GetCurrentState().Name);
     }
 
     private void muertoAction()
@@ -389,7 +395,7 @@ public class Paciente : MonoBehaviour
     {
         if (urgente)
         {
-
+            //FALTA MANDARLOS AL TARGET DEL CELADOR DE SALA O ESPERAR
         }
         else
         {

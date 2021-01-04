@@ -83,4 +83,8 @@ public class Personaje: MonoBehaviour
     {
         animator.SetBool("Sitting", true);
     }
+    public void levantarse()
+    {
+        animator.SetBool("Sitting", false);
+    }
 }

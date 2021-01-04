@@ -296,6 +296,7 @@ public class Mundo: MonoBehaviour
 
     public void CrearProfesionales()
     {
+        prefabCelador.GetComponent<Celador>().turnoSala = true;
         for(int i=0; i < numCeladores; i++)
         {
             prefabCelador.GetComponent<Celador>().turnoSala = !prefabCelador.GetComponent<Celador>().turnoSala;
@@ -417,7 +418,6 @@ public class Mundo: MonoBehaviour
     {
         listaEsperaMedico.Add(paciente);
         listaEsperaMedico.Sort(new ComparadorPrioridad());//Con un comparator de prioridad? si misma prioridad-> por tiempo de espera
-
     }
     public void AddPacienteCirugia(Paciente paciente)
     {

@@ -3141,7 +3141,7 @@ GameObject:
   - component: {fileID: 251005583}
   - component: {fileID: 251005582}
   m_Layer: 5
-  m_Name: txt (4)
+  m_Name: CirujanosText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3507,7 +3507,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 274072047}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.56, y: 0, z: -11.85}
+  m_LocalPosition: {x: -1.71, y: 0, z: -11.85}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1633867637}
@@ -7508,7 +7508,7 @@ GameObject:
   - component: {fileID: 665993479}
   - component: {fileID: 665993478}
   m_Layer: 5
-  m_Name: txt
+  m_Name: "M\xE9dicosText"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9418,7 +9418,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 813251757}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -15.313, y: 0, z: -6.743}
+  m_LocalPosition: {x: -15.313, y: 0, z: -6.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 10065051}
@@ -11084,8 +11084,6 @@ MonoBehaviour:
     - m_Text: 2
       m_Image: {fileID: 0}
     - m_Text: 3
-      m_Image: {fileID: 0}
-    - m_Text: 4
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -13782,8 +13780,6 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: 3
       m_Image: {fileID: 0}
-    - m_Text: 4
-      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -14240,13 +14236,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1291857899}
-  m_LocalRotation: {x: -0, y: 0.7259884, z: -0, w: 0.68770695}
-  m_LocalPosition: {x: -15.383, y: 0, z: -5.778}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -15.35, y: 0, z: -5.778}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 10065051}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 93.102005, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &1291857901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18047,7 +18043,7 @@ GameObject:
   - component: {fileID: 1649168760}
   - component: {fileID: 1649168759}
   m_Layer: 5
-  m_Name: txt (2)
+  m_Name: EnfermerosText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18677,7 +18673,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1733063722}
   m_LocalRotation: {x: 0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: -11.756, y: 0, z: -2.191}
+  m_LocalPosition: {x: -11.76, y: 0, z: -6.38}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1536858334}
@@ -19501,7 +19497,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1799758872}
   m_LocalRotation: {x: 0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: -11.771, y: 0, z: -6.29}
+  m_LocalPosition: {x: -11.77, y: 0, z: -2.23}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1536858334}
@@ -20138,7 +20134,7 @@ GameObject:
   - component: {fileID: 1868772669}
   - component: {fileID: 1868772668}
   m_Layer: 5
-  m_Name: txt (3)
+  m_Name: LimpiadoresText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23594,7 +23590,7 @@ GameObject:
   - component: {fileID: 2137882203}
   - component: {fileID: 2137882202}
   m_Layer: 5
-  m_Name: txt (1)
+  m_Name: CeladoresText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28111,11 +28107,6 @@ PrefabInstance:
       propertyPath: targetEsperaSala.Array.data[0]
       value: 
       objectReference: {fileID: 1338940965}
-    - target: {fileID: 8851627390648215209, guid: 37b8389e404b47a44a19105a42ede2e9,
-        type: 3}
-      propertyPath: timeJornada
-      value: 30
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37b8389e404b47a44a19105a42ede2e9, type: 3}
 --- !u!23 &4690399222540045505

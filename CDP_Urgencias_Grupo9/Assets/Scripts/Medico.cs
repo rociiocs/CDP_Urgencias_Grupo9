@@ -55,7 +55,7 @@ public class Medico : MonoBehaviour
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Mirar
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.libre);
         //Si hay un paciente delante
         Perception terminarDespachar = myFSM.CreatePerception<TimerPerception>(timeDespachar);//puede que sea value si se usa animación
         //Si termina el tiempo de la jornada
@@ -84,6 +84,7 @@ public class Medico : MonoBehaviour
     void Update()
     {
         myFSM.Update();
+        //Debug.Log(myFSM.GetCurrentState().Name);
         if (myFSM.GetCurrentState().Name.Equals(casa.Name))
         {
             //Si el puesto de trabajo está libre
@@ -111,6 +112,10 @@ public class Medico : MonoBehaviour
         targetUrgencias.libre = false;
         sala.libre = false;
         personaje.GoTo(targetUrgencias);
+        if (personaje.haLlegado)
+        {
+            personaje.sentarse();
+        }
     }
 
     private void irCasaAction()
@@ -125,14 +130,46 @@ public class Medico : MonoBehaviour
     private void examinandoPacienteAction()
     {
         //Coger referencia paciente
+        Debug.Log("Esto cuántas veces se hace?");
+        paciente = targetPaciente.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;
         PutEmoji(emoExaminar);
-
+        paciente.siguientePaso();
     }
 
     private void despachandoPacienteAction()
     {
         //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
-        paciente.siguientePaso();
+        if (paciente != null)
+        {
+            if (paciente.pasoActual == Paso.Casa)
+            {
+                paciente.soyLeve.Fire();
+            }
+            else
+            {
+                mandarPacienteListaEspera();
+                //Hago yo que s elevante porque no sé en qué estado del paciente hacerlo, pero vamos, que no hace animación de caminar pese al GoTo
+                paciente.GetComponent<Personaje>().levantarse();
+                paciente.heSidoAtendido.Fire();
+            }
+        }
+    }
+    private void mandarPacienteListaEspera()
+    {
+        switch (paciente.pasoActual)
+        {
+            case Paso.Cirujano:
+                mundo.AddPacienteCirugia(paciente);
+                break;
+            case Paso.Enfermeria:
+                mundo.AddPacienteEnfermeria(paciente);
+                break;
+            case Paso.Medico:
+                mundo.AddPacienteMedico(paciente);
+                break;
+            default:
+                break;
+        }
     }
 }
