@@ -153,12 +153,12 @@ public class Celador : MonoBehaviour
                 {
                     if (sala.posicionSalaProfesional[i].libre)
                     {
+                        sala.posicionSalaProfesional[i].libre = false;
                         //idSala = i;
                         targetUrgenciasSala = sala.posicionSalaProfesional[i];
                         targetPacienteSala = sala.posicionSalaPaciente[i];
                         targetPacienteSala.ocupado = true;
                         myFSM.Fire("comienza jornada");
-                        sala.posicionSalaProfesional[i].libre = false;
                         return;
                     }
                 }
@@ -196,12 +196,14 @@ public class Celador : MonoBehaviour
     //REVISAR
     private void atendiendoPacienteAction()
     {
+        //Debug.Log(myFSMMostrador.GetCurrentState().Name);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;
         PutEmoji(emoAtender);
     }
     private void esperandoPacienteAction()
     {
+        Debug.Log(myFSMSala.GetCurrentState().Name);
         turnoSala = true;
         if (paciente != null)
         {
@@ -240,10 +242,10 @@ public class Celador : MonoBehaviour
     }
     private void atendiendoUrgenteAction()
     {
+        Debug.Log(myFSMSala.GetCurrentState().Name);
         paciente = targetPacienteSala.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;
         PutEmoji(emoAtender);
-        //paciente.myFSMVivo.Fire("esperar sala libre");
     }
 
     //REVISAR, NO ESTÁ ENCONTRANDO LOS HUECOS LIBRES

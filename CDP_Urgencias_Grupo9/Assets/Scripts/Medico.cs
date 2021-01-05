@@ -104,10 +104,10 @@ public class Medico : MonoBehaviour
                 }
             }
         }
-        if (paciente != null)
+        /*if (paciente != null)
         {
             Debug.Log(paciente.myFSMVivo.GetCurrentState().Name);
-        }
+        }*/
     }
     private void PutEmoji(Sprite emoji)
     {
@@ -140,7 +140,7 @@ public class Medico : MonoBehaviour
         //Coger referencia paciente
         if (targetPaciente.actual != null)
         {
-            Debug.Log(myFSM.GetCurrentState().Name);
+            //Debug.Log(myFSM.GetCurrentState().Name);
             paciente = targetPaciente.actual.GetComponent<Paciente>();
             enfermedad = paciente.enfermedad;
             PutEmoji(emoExaminar);
@@ -148,7 +148,7 @@ public class Medico : MonoBehaviour
         }
     }
 
-    //private void despachandoPacienteAction()
+    //*private void despachandoPacienteAction()
     //{
     //    Debug.Log(myFSM.GetCurrentState().Name);
     //    //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
@@ -167,10 +167,10 @@ public class Medico : MonoBehaviour
     //        sala.libre = true;
     //        paciente = null;
     //    }
-    //}
+    //}*/
     private void despachandoPacienteAction()
     {
-        Debug.Log(myFSM.GetCurrentState().Name);
+        //Debug.Log(myFSM.GetCurrentState().Name);
         //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
         if (paciente != null)
         {

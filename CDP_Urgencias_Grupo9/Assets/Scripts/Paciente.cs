@@ -138,9 +138,9 @@ public class Paciente : MonoBehaviour
         yendoCentro = myFSMVivo.CreateEntryState("yendoCentro", () => { targetUrgenciasID = mundo.targetColaFuera.Length; });
         llegadaCentro = myFSMVivo.CreateState("llegadaCentro");
         entrandoCentro = myFSMVivo.CreateState("entrandoCentro", entrandoCentroAction);
-        entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente");
+        entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente", entrandoCentroAction); 
         siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano");
-        siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta",()=> Debug.Log("SIENDO ATENDIDO"));
+        siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta");//,()=> Debug.Log("SIENDO ATENDIDO"));
         yendoSala = myFSMVivo.CreateState("yendoSala",()=>GoTo(targetUrgencias));
         yendoUCI = myFSMVivo.CreateState("yendoUCI");
         llegadaUCI = myFSMVivo.CreateState("llegadaUCI");
@@ -183,7 +183,7 @@ public class Paciente : MonoBehaviour
         Perception estoyVivoPerception = myFSM.CreatePerception<ValuePerception>(() => estoyVivo);
         Perception soyUrgente = myFSMVivo.CreatePerception<ValuePerception>(()=> enfermedad != null && enfermedad.urgente);
         Perception haEntradoCentro = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado);
-        Perception celadorLibreSala = myFSMVivo.CreatePerception<ValuePerception>(); //
+        Perception celadorLibreSala = myFSMVivo.CreatePerception<ValuePerception>(()=>!targetUrgencias.libre); //
         //El celador hace push al personaje
         Perception atendidoCelador = myFSMVivo.CreatePerception<PushPerception>(); 
         //El mundo hace push al paciente cuando hay sala libre
@@ -239,13 +239,12 @@ public class Paciente : MonoBehaviour
         myFSM.CreateTransition("aparecer", casa, estoyVivoPerception, vivo);
         myFSMVivo.CreateTransition("he llegado centro y soy urgente", yendoCentro, soyUrgente, entrandoCentroUrgente);
         myFSMVivo.CreateTransition("he llegado centro y no soy urgente", yendoCentro, noSoyUrgente, haciendoColaFuera);
-        //myFSM.CreateTransition("he llegado centro y soy urgente", yendoCentro, soyUrgente, entrandoCentro);
-        //myFSM.CreateTransition("he llegado centro y no soy urgente", yendoCentro, noSoyUrgente, haciendoColaFuera);
 
 
-        myFSMVivo.CreateTransition("acudiendo celador",entrandoCentro, celadorLibreSala, acudirCeladorSala);    
+
+        myFSMVivo.CreateTransition("acudiendo celador", entrandoCentroUrgente, celadorLibreSala, acudirCeladorSala);    
         myFSMVivo.CreateTransition("ser atendido celador", acudirCeladorSala, heLlegado, siendoAtendidoCelador);    
-        myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido, esperandoSalaUrgente);    
+        myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido, urgente? esperandoSalaUrgente: esperandoSalaEspera);    
         myFSMVivo.CreateTransition("acudir quirofano", esperandoSalaUrgente, SalaAsignadaLibre, yendoSala);    
         myFSMVivo.CreateTransition("llegado quirofano", yendoSala, heLlegadoSala, urgente? siendoAtendidoQuirofano: siendoAtendidoConsulta);    
         myFSMVivo.CreateTransition("acudir a la UCI", siendoAtendidoQuirofano, soyGrave, yendoUCI);    
@@ -298,7 +297,7 @@ public class Paciente : MonoBehaviour
     private void irBanhoAction()
     {
        GoTo(targetBanho);
-        Debug.Log("al baño");
+        //Debug.Log("al baño");
     }
     void Update()
     {
@@ -308,8 +307,8 @@ public class Paciente : MonoBehaviour
             
 
         }*/
-        Debug.Log(myFSMAnalisisOrina.GetCurrentState().Name);
-        Debug.Log(myFSMVivo.GetCurrentState().Name);
+        //Debug.Log(myFSMAnalisisOrina.GetCurrentState().Name);
+        //Debug.Log(myFSMVivo.GetCurrentState().Name);
         myFSM.Update();
         myFSMAnalisisOrina.Update();
         myFSMColaDentro.Update();
@@ -342,7 +341,10 @@ public class Paciente : MonoBehaviour
                 }
             }
         }
-
+        if (urgente)
+        {
+           // Debug.Log(myFSMVivo.GetCurrentState().Name);
+        }
         //Debug.Log("fsm" + myFSM.GetCurrentState().Name);
         //Debug.Log("fsmVivo " + myFSMVivo.GetCurrentState().Name);
         //Debug.Log("fsmColaFuera " + myFSMColaFuera.GetCurrentState().Name);
@@ -412,7 +414,13 @@ public class Paciente : MonoBehaviour
     {
         if (urgente)
         {
-            //FALTA MANDARLOS AL TARGET DEL CELADOR DE SALA O ESPERAR
+            for(int i=0; i < mundo.targetEsperaSala.Length; i++)
+            {
+                targetUrgencias = mundo.targetEsperaSala[i];
+                targetUrgencias.libre = false;
+                GoTo(targetUrgencias);
+                break;
+            }
         }
         else
         {
