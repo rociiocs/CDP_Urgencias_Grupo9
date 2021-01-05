@@ -147,13 +147,13 @@ public class Paciente : MonoBehaviour
 
 
         //No urgentes
-        siendoAtendidoCeladorMostrador = myFSMVivo.CreateState("siendoAtendidoCeladorMostrador", siendoAtendidoCeladorAction);
+        siendoAtendidoCeladorMostrador = myFSMVivo.CreateState("siendoAtendidoCeladorMostrador");
 
         yendoSalaEspera = myFSM.CreateState("yendoSalaEspera");
 
         //Urgentes
         acudirCeladorSala = myFSMVivo.CreateState("acudirCeladorSala");
-        siendoAtendidoCelador = myFSMVivo.CreateState("siendoAtendidoCelador", siendoAtendidoCeladorAction);
+        siendoAtendidoCelador = myFSMVivo.CreateState("siendoAtendidoCelador");
         esperandoSalaUrgente = myFSMVivo.CreateState("esperandoSalaUrgente");
         
         //Cola fuera
@@ -246,7 +246,7 @@ public class Paciente : MonoBehaviour
         myFSMVivo.CreateTransition("ser atendido celador", acudirCeladorSala, heLlegado, siendoAtendidoCelador);    
         myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido, esperandoSalaUrgente);    
         myFSMVivo.CreateTransition("acudir quirofano", esperandoSalaUrgente, SalaAsignadaLibre, yendoSala);    
-        myFSMVivo.CreateTransition("llegado quirofano", yendoSala, heLlegadoSala, siendoAtendidoQuirofano);    
+        myFSMVivo.CreateTransition("llegado quirofano", yendoSala, heLlegadoSala, urgente? siendoAtendidoQuirofano: siendoAtendidoConsulta);    
         myFSMVivo.CreateTransition("acudir a la UCI", siendoAtendidoQuirofano, soyGrave, yendoUCI);    
         myFSMVivo.CreateTransition("acudir a casa", siendoAtendidoQuirofano, soyLeve, yendoCasa);    
         myFSMVivo.CreateTransition("he llegado a UCI", yendoUCI, heLlegado, casaFin);  
@@ -266,7 +266,7 @@ public class Paciente : MonoBehaviour
         myFSMEsperandoSala.CreateTransition("hay asiento libre", esperandoDePie, asientoLibre, ocupandoAsiento);
         myFSMVivo.CreateExitTransition("hay sala libre", ocupandoAsiento, SalaAsignadaLibre, yendoSala);
         myFSMVivo.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala);
-        myFSMVivo.CreateTransition("llegada a sala y siendo atendido", yendoSala, heLlegadoSala, siendoAtendidoConsulta);
+        myFSMVivo.CreateTransition("llegada a sala y siendo atendido", yendoSala, heLlegadoSala, urgente ? siendoAtendidoQuirofano : siendoAtendidoConsulta);
         myFSMVivo.CreateTransition("ir hacer analisis orina", siendoAtendidoConsulta, tengoQueHacerAnalisisOrina, haciendoAnalisisOrina);
         myFSMAnalisisOrina.CreateTransition("tomando muestra orina", yendoBaño, hellegadoBaño, tomandoMuestra);
         myFSMAnalisisOrina.CreateTransition("volver al sitio", tomandoMuestra, heTomadoMuestra, volviendoSitio);
@@ -346,6 +346,8 @@ public class Paciente : MonoBehaviour
     private void muertoAction()
     {
         emoticono.sprite = emoMuerto;
+        targetUrgencias.libre = true;
+        targetUrgencias.ocupado = true;
         personaje.myAgent.Stop();
         personaje.muerto = true;
         personaje.myAgent.enabled = false;
@@ -383,13 +385,6 @@ public class Paciente : MonoBehaviour
         targetUrgenciasID--;
         targetUrgencias.libre = false;
         GoTo(targetUrgencias);
-    }
-
-    private void siendoAtendidoCeladorAction()
-    {
-
-        
-        //myFSMVivo.Fire("esperando sala");
     }
     private void entrandoCentroAction()
     {

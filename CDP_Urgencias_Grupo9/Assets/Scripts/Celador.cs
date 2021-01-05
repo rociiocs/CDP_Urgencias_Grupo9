@@ -79,14 +79,14 @@ public class Celador : MonoBehaviour
 
 
         //PRUEBAS DE CELTIA NI CASO
-        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => !targetPaciente.libre);
+        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
 
 
 
         //PRUEBAS DE CELTIA NI CASO
 
         //Si hay un paciente urgente que atender
-        Perception urgenteAtender = myFSMSala.CreatePerception<ValuePerception>(() => !targetPacienteSala.libre);
+        Perception urgenteAtender = myFSMSala.CreatePerception<ValuePerception>(() => !targetPacienteSala.ocupado);
         //Si se produce cambio de turno
         Perception cambioTurno = myFSM.CreatePerception<TimerPerception>(timeTurno);
         //Si hay un puesto libre donde voy a cambiar

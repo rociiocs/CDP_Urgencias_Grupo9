@@ -30,10 +30,12 @@ public class Personaje: MonoBehaviour
         if (targetU != null)
         {
             targetU.libre = true;
+            targetU.ocupado = true;
         }
         targetU = targetUrgencias;
         targetU.actual = this;
         target = targetUrgencias.transform;
+        targetU.libre = false;
         haLlegado = false;
         myAgent.Resume();
         myAgent.SetDestination(target.position);
@@ -52,7 +54,7 @@ public class Personaje: MonoBehaviour
             {
                 DetenerPersonaje();
                 transform.rotation = target.rotation;
-                targetU.libre = false;
+                targetU.ocupado = false;
             }
         }
     }

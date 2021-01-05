@@ -8,8 +8,8 @@ public class Medico : MonoBehaviour
    
     //Variables
     public int timeJornada = 2000;
-    int timeExaminar = 5;
-    int timeDespachar = 5;
+    int timeExaminar = 2;
+    int timeDespachar = 1;
 
 
     Personaje personaje;
@@ -55,7 +55,7 @@ public class Medico : MonoBehaviour
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.libre);
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
         //Si hay un paciente delante
         Perception terminarDespachar = myFSM.CreatePerception<TimerPerception>(timeDespachar);//puede que sea value si se usa animación
         //Si termina el tiempo de la jornada
@@ -96,10 +96,15 @@ public class Medico : MonoBehaviour
                     sala = oficinas[i];
                     targetUrgencias = sala.posicionProfesional;
                     targetPaciente = sala.posicionPaciente;
+                    targetPaciente.ocupado = true;
                     myFSM.Fire("comienza jornada");
                     return;
                 }
             }
+        }
+        if (paciente != null)
+        {
+            Debug.Log(paciente.myFSMVivo.GetCurrentState().Name);
         }
     }
     private void PutEmoji(Sprite emoji)
@@ -129,19 +134,25 @@ public class Medico : MonoBehaviour
 
     private void examinandoPacienteAction()
     {
+
         //Coger referencia paciente
-        Debug.Log("Esto cuántas veces se hace?");
-        paciente = targetPaciente.actual.GetComponent<Paciente>();
-        enfermedad = paciente.enfermedad;
-        PutEmoji(emoExaminar);
-        paciente.siguientePaso();
+        if (targetPaciente.actual != null)
+        {
+            Debug.Log(myFSM.GetCurrentState().Name);
+            paciente = targetPaciente.actual.GetComponent<Paciente>();
+            enfermedad = paciente.enfermedad;
+            PutEmoji(emoExaminar);
+            paciente.siguientePaso();
+        }
     }
 
     private void despachandoPacienteAction()
     {
+        Debug.Log(myFSM.GetCurrentState().Name);
         //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
         if (paciente != null)
         {
+            
             if (paciente.pasoActual == Paso.Casa)
             {
                 paciente.soyLeve.Fire();
@@ -149,10 +160,10 @@ public class Medico : MonoBehaviour
             else
             {
                 mandarPacienteListaEspera();
-                //Hago yo que s elevante porque no sé en qué estado del paciente hacerlo, pero vamos, que no hace animación de caminar pese al GoTo
-                paciente.GetComponent<Personaje>().levantarse();
-                paciente.heSidoAtendido.Fire();
+                paciente.todaviaTengoQueSerTratado.Fire();
             }
+            sala.libre = true;
+            paciente = null;
         }
     }
     private void mandarPacienteListaEspera()
