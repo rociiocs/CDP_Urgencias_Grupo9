@@ -39,7 +39,7 @@ public class Medico : MonoBehaviour
     void Start()
     {
         myFSM = new StateMachineEngine();
-        mundo =FindObjectOfType<Mundo>();
+        mundo = FindObjectOfType<Mundo>();
         personaje = GetComponent<Personaje>();
         oficinas = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.MEDICO));
 
@@ -47,9 +47,10 @@ public class Medico : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => {PutEmoji(emoEsperarPaciente); sala.libre = true;despachandoPacienteAction(); });
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
-        despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
+        //despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
+        despacharPaciente = myFSM.CreateState("despacharPaciente");
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarMedico(personaje.nombre); Destroy(this.gameObject); });
 
 
@@ -98,6 +99,7 @@ public class Medico : MonoBehaviour
                     targetPaciente = sala.posicionPaciente;
                     targetPaciente.ocupado = true;
                     myFSM.Fire("comienza jornada");
+                    
                     return;
                 }
             }
@@ -146,13 +148,33 @@ public class Medico : MonoBehaviour
         }
     }
 
+    //private void despachandoPacienteAction()
+    //{
+    //    Debug.Log(myFSM.GetCurrentState().Name);
+    //    //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
+    //    if (paciente != null)
+    //    {
+            
+    //        if (paciente.pasoActual == Paso.Casa)
+    //        {
+    //            paciente.soyLeve.Fire();
+    //        }
+    //        else
+    //        {
+    //            mandarPacienteListaEspera();
+    //            paciente.todaviaTengoQueSerTratado.Fire();
+    //        }
+    //        sala.libre = true;
+    //        paciente = null;
+    //    }
+    //}
     private void despachandoPacienteAction()
     {
         Debug.Log(myFSM.GetCurrentState().Name);
         //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
         if (paciente != null)
         {
-            
+
             if (paciente.pasoActual == Paso.Casa)
             {
                 paciente.soyLeve.Fire();
@@ -162,8 +184,9 @@ public class Medico : MonoBehaviour
                 mandarPacienteListaEspera();
                 paciente.todaviaTengoQueSerTratado.Fire();
             }
-            sala.libre = true;
+            //sala.libre = true;
             paciente = null;
+            targetPaciente.ocupado = true;
         }
     }
     private void mandarPacienteListaEspera()

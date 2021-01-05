@@ -33,6 +33,10 @@ public class Personaje: MonoBehaviour
             targetU.ocupado = true;
         }
         targetU = targetUrgencias;
+        if (targetU == null)
+        {
+            int a = 4;
+        }
         targetU.actual = this;
         target = targetUrgencias.transform;
         targetU.libre = false;
@@ -40,6 +44,7 @@ public class Personaje: MonoBehaviour
         myAgent.Resume();
         myAgent.SetDestination(target.position);
         animator.SetBool("Walking", true);
+
         //andando = true;
         this.target = target;
         StartCoroutine(tiempoEspera());
@@ -73,6 +78,7 @@ public class Personaje: MonoBehaviour
     }
     IEnumerator tiempoEspera()// es necesario porque por alguna razon entra en la condicion del update justo despues de comenzar a caminar
     {
+        andando = false;
         yield return new WaitForSeconds(0.5f);
         andando = true;
     }

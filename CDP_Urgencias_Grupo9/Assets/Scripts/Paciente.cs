@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -129,7 +130,7 @@ public class Paciente : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");//, () => Debug.Log("encasa"));
         muerto = myFSM.CreateState("muerto", () => morirse = true);
         salirVivo= myFSM.CreateState("salirVivo", muertoAction);
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); Destroy(gameObject); });
+        casaFin = myFSM.CreateState("casaFin", () => { mundo.PacienteMenos(personaje);  Destroy(gameObject); });
 
         //Submáquina vivo
 
@@ -174,7 +175,7 @@ public class Paciente : MonoBehaviour
 
         //Esperando sala espera
 
-        esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie");//,  () => GoTo(mundo.asientos[0]));//targetUrgencias.libre = true);
+        esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie",ocupandoDePieAction);//,  () => GoTo(mundo.asientos[0]));//targetUrgencias.libre = true);
 
         ocupandoAsiento = myFSMEsperandoSala.CreateState("ocupandoAsiento", ocupandoAsientoAction);
 
@@ -214,7 +215,7 @@ public class Paciente : MonoBehaviour
         //El celador pone el push de ser atendido
         heSidoAtendido = myFSMVivo.CreatePerception<PushPerception>();
         //Añadir como ver si hay algún target de asiento libre
-        Perception asientoLibre = myFSMEsperandoSala.CreatePerception<ValuePerception>(() => mundo.asientosOcupados < mundo.asientos.Length);
+        Perception asientoLibre = myFSMEsperandoSala.CreatePerception<ValuePerception>(() =>  ComprobarOcupados());
         //Push por el enfermero
          tengoQueHacerAnalisisOrina = myFSMVivo.CreatePerception<PushPerception>();
 
@@ -225,9 +226,9 @@ public class Paciente : MonoBehaviour
         //El profesional hace push para que vuelvas a sala de espera
          todaviaTengoQueSerTratado = myFSMVivo.CreatePerception<PushPerception>();
         Perception animacionMuerto = myFSM.CreatePerception<TimerPerception>(timerAnimacionMorir);
-        esperandoSalaEspera = myFSMVivo.CreateSubStateMachine("esperandoSalaEspera", myFSMEsperandoSala);
+        esperandoSalaEspera = myFSMVivo.CreateSubStateMachine("esperandoSalaEspera", myFSMEsperandoSala,esperandoDePie);
         vivo = myFSM.CreateSubStateMachine("vivo", myFSMVivo, yendoCentro);
-        haciendoAnalisisOrina = myFSMVivo.CreateSubStateMachine("haciendoAnalisisOrina", myFSMAnalisisOrina);
+        haciendoAnalisisOrina = myFSMVivo.CreateSubStateMachine("haciendoAnalisisOrina", myFSMAnalisisOrina,yendoBaño);
         haciendoColaDentro = myFSMVivo.CreateSubStateMachine("haciendoColaDentro", myFSMColaDentro);
         haciendoColaFuera = myFSMVivo.CreateSubStateMachine("haciendoColaFuera", myFSMColaFuera, esperandoCola);
 
@@ -264,15 +265,22 @@ public class Paciente : MonoBehaviour
         myFSMColaDentro.CreateExitTransition("hay mostrador libre", esperandoColaDentro, hayMostradorLibre, siendoAtendidoCeladorMostrador);
         myFSMVivo.CreateTransition("esperando sala", siendoAtendidoCeladorMostrador, heSidoAtendido, esperandoSalaEspera);
         myFSMEsperandoSala.CreateTransition("hay asiento libre", esperandoDePie, asientoLibre, ocupandoAsiento);
-        myFSMVivo.CreateExitTransition("hay sala libre", ocupandoAsiento, SalaAsignadaLibre, yendoSala);
-        myFSMVivo.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala);
+        // myFSMVivo.CreateExitTransition("hay sala libre", ocupandoAsiento, SalaAsignadaLibre, yendoSala);
+        myFSMEsperandoSala.CreateExitTransition("hay sala libre", ocupandoAsiento, SalaAsignadaLibre, yendoSala);
+        // myFSMVivo.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala);
+        myFSMEsperandoSala.CreateExitTransition("hay sala libre pie", esperandoDePie, SalaAsignadaLibre, yendoSala);
         myFSMVivo.CreateTransition("llegada a sala y siendo atendido", yendoSala, heLlegadoSala, urgente ? siendoAtendidoQuirofano : siendoAtendidoConsulta);
         myFSMVivo.CreateTransition("ir hacer analisis orina", siendoAtendidoConsulta, tengoQueHacerAnalisisOrina, haciendoAnalisisOrina);
         myFSMAnalisisOrina.CreateTransition("tomando muestra orina", yendoBaño, hellegadoBaño, tomandoMuestra);
         myFSMAnalisisOrina.CreateTransition("volver al sitio", tomandoMuestra, heTomadoMuestra, volviendoSitio);
         myFSMAnalisisOrina.CreateExitTransition("volver a ser atendido", volviendoSitio, hellegadoSitio, siendoAtendidoConsulta);
-        myFSMVivo.CreateTransition("volver a sala espera", siendoAtendidoConsulta, todaviaTengoQueSerTratado, yendoSalaEspera);
-        myFSMVivo.CreateTransition("volver esperando sala", yendoSalaEspera, heLlegado, esperandoSalaEspera);
+
+        //myFSMVivo.CreateTransition("volver a sala espera", siendoAtendidoConsulta, todaviaTengoQueSerTratado, yendoSalaEspera);
+        //myFSMVivo.CreateTransition("volver esperando sala", yendoSalaEspera, heLlegado, esperandoSalaEspera);
+
+        myFSMVivo.CreateTransition("volver a sala espera", siendoAtendidoConsulta, todaviaTengoQueSerTratado, esperandoSalaEspera);
+        //myFSMVivo.CreateTransition("volver esperando sala", yendoSalaEspera, heLlegado, esperandoSalaEspera);
+
         myFSMVivo.CreateTransition("acudir a la UCI consulta", siendoAtendidoConsulta, soyGrave, yendoUCI);
         myFSMVivo.CreateTransition("acudir a casa consulta", siendoAtendidoConsulta, soyLeve, yendoCasa);
   
@@ -297,9 +305,11 @@ public class Paciente : MonoBehaviour
         /*if (enfermedad.tipoEnfermedad.Equals(TipoEnfermedad.Cistitis))
         {
             Debug.Log(myFSM.GetCurrentState().Name);
-            Debug.Log(myFSMAnalisisOrina.GetCurrentState().Name);
+            
 
         }*/
+        Debug.Log(myFSMAnalisisOrina.GetCurrentState().Name);
+        Debug.Log(myFSMVivo.GetCurrentState().Name);
         myFSM.Update();
         myFSMAnalisisOrina.Update();
         myFSMColaDentro.Update();
@@ -311,6 +321,8 @@ public class Paciente : MonoBehaviour
         if (morirse)
         {
             personaje.Morirse();
+          
+           
             StartCoroutine(Die());
             if (fade == true)
             {
@@ -323,6 +335,9 @@ public class Paciente : MonoBehaviour
                 if (oColor.a <= 0)
                 {
                     fade = false;
+                    mundo.PacienteMenos(personaje);
+                    mundo.nMuertes++;
+                    mundo.numMuertosText.text = mundo.nMuertes.ToString();
                     morirse = false;
                 }
             }
@@ -342,12 +357,19 @@ public class Paciente : MonoBehaviour
         }
         //Debug.Log(myFSMVivo.GetCurrentState().Name);
     }
-
+    private bool ComprobarOcupados()
+    {
+        int cuantos= Array.FindAll(mundo.asientos, (a) => a.libre).Length;
+        return cuantos > 0;
+    }
     private void muertoAction()
     {
         emoticono.sprite = emoMuerto;
-        targetUrgencias.libre = true;
-        targetUrgencias.ocupado = true;
+        if (targetUrgencias != null)
+        {
+            targetUrgencias.libre = true;
+            targetUrgencias.ocupado = true;
+        }
         personaje.myAgent.Stop();
         personaje.muerto = true;
         personaje.myAgent.enabled = false;
@@ -415,8 +437,24 @@ public class Paciente : MonoBehaviour
         {
             if (mundo.asientos[i].libre)
             {
+                
                 targetUrgencias.libre = true;
                 targetUrgencias = mundo.asientos[i];
+                targetUrgencias.libre = false;
+                targetUrgenciasID = i;
+                GoTo(targetUrgencias);
+                break;
+            }
+        }
+    }
+    private void ocupandoDePieAction()
+    {
+        for (int i = 0; i < mundo.dePie.Length; i++)
+        {
+            if (mundo.dePie[i].libre)
+            {
+                targetUrgencias.libre = true;
+                targetUrgencias = mundo.dePie[i];
                 targetUrgencias.libre = false;
                 targetUrgenciasID = i;
                 GoTo(targetUrgencias);

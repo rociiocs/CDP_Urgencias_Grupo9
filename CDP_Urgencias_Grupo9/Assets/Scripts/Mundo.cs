@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum TipoEnfermedad
 {
@@ -37,6 +38,7 @@ public class Mundo: MonoBehaviour
     //referencia al seleccionador de camara
     SeleccionadorCamara sc;
     //
+    public Text numMuertosText;
     public Sprite[] emoticonoEnfermedad;
     public List<Enfermedad> enfermedades = new List<Enfermedad>();
     public List<Sala> salas = new List<Sala>();
@@ -67,21 +69,23 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetColaDentro;
     public TargetUrgencias[] targetColaFuera;
     public TargetUrgencias[] asientos;
+    public TargetUrgencias[] dePie;
     public TargetUrgencias[] banhos;
 
     public TargetUrgencias laboratorio;
     public TargetUrgencias casa;
     public TargetUrgencias casaPaciente;
-    private int nMuertes = 0;
+    public int nMuertes = 0;
     private int MAX_PACIENTES = 15;
     //private float spawnMaxTime = 15f;
     //private float spawnMinTime = 9f;
+    private List<string> nombres = new List<string>{"Maria","Jose", "Dani", "Rocio", "Antonio", "Celtia", "Panumo", "Paco Pepe", "Josefina", "Antonella", "Uxia", "Ramon", "Byron", "Adrian","Tomas" };
     private float spawnMaxTime = 0;
     private float spawnMinTime = 9;
     private int contPacientes = 0;
     public bool aforo;
     public int aforoMax = 4;
-    public int asientosOcupados = 0;
+
     //public bool ponerSalaSucia = false;
 
 
@@ -99,11 +103,11 @@ public class Mundo: MonoBehaviour
             //Esto se debería hacer dos veces
             nueva.posicionPaciente = targetEnfermeriaPaciente[i];
             nueva.posicionProfesional = targetEnfermeria[i];
-           
+            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
             salas.Add(nueva);
-            if (ID < numEnfermeria)
+            if (i%2!=0)//impares
             {
-                nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+              
                 ID++;
             }
          
@@ -114,11 +118,10 @@ public class Mundo: MonoBehaviour
             nueva.posicionPaciente = targetCirujanoPaciente[i];
             nueva.posicionProfesional = targetCirujano[i];
             salas.Add(nueva);
-            if (ID < numCirugia)
-            {
-                nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+        
                 ID++;
-            }
+            
            
         }
         for (int i = 0; i <numMedicoP; i++)
@@ -128,12 +131,10 @@ public class Mundo: MonoBehaviour
             nueva.posicionProfesional = targetMedico[i];
           
             salas.Add(nueva);
-
-            if (ID < numMedico)
-            {
-                nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+            nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+           
                 ID++;
-            }
+            
         }
         SalaEspera espera = new SalaEspera(TipoSala.ESPERA, ID);
         espera.posicionMostradorProfesional = targetEsperaMostrador;
@@ -265,16 +266,21 @@ public class Mundo: MonoBehaviour
             {
                 if (!targetLimpiadores[i].libre)
                 {
+                    
                     return;
                 }
             }
 
             for (int i = 0; i < listaLimpiadores.Count; i++)
             {
-                if (listaLimpiadores[i].salaLimpiando.tipo != TipoSala.CIRUGIA)
+                if (listaLimpiadores[i].salaLimpiando != null)
                 {
-                    listaLimpiadores[i].limpiarQuirofanoUrgente();
-                    break;
+                    if (listaLimpiadores[i].salaLimpiando.tipo != TipoSala.CIRUGIA)
+                    {
+                        listaLimpiadores[i].limpiarQuirofanoUrgente();
+                        break;
+                    }
+
                 }
             }
         }
@@ -363,7 +369,12 @@ public class Mundo: MonoBehaviour
         nuevo.nombre = nombre;
         sc.AnhadirProfesional(nuevo);
     }
- 
+    public void PacienteMenos(Personaje p)
+    {
+        sc.EliminarProfesional(p);
+        nombres.Add(p.nombre);
+        contPacientes--;
+    }
     private void LlamarLimpiadores()
     {
         int cont;
@@ -433,6 +444,9 @@ public class Mundo: MonoBehaviour
             yield return new WaitUntil(()=>contPacientes < MAX_PACIENTES);
             contPacientes++;
             Paciente nuevo= Instantiate(prefabPaciente, casaPaciente.transform.position,Quaternion.identity).GetComponent<Paciente>();
+            string nombre = nombres[0];
+            nombres.RemoveAt(0);
+            nuevo.GetComponent<Personaje>().nombre = nombre;
             sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
             int enfermedad = (int)Random.Range(0, enfermedades.Count-4);
             Enfermedad aux = enfermedades[enfermedad];

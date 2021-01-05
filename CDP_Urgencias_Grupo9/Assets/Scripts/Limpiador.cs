@@ -31,7 +31,7 @@ public class Limpiador : MonoBehaviour
     State consultandoPantalla;
     State limpiandoQuirofano;
     State limpiandoSala;
-
+    Perception haySalaLimpiar;
 
     // Start is called before the first frame update
     void Start()
@@ -60,7 +60,7 @@ public class Limpiador : MonoBehaviour
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si hay sala que limpiar, el limpiador se dirige a ella
-        Perception haySalaLimpiar = myFSM.CreatePerception<PushPerception>();
+        haySalaLimpiar = myFSM.CreatePerception<PushPerception>();
         //Si hay un quirofano que limpiar
         Perception hayQuirofanoLimpiar = myFSM.CreatePerception<PushPerception>();
         //Si hay un quirofano que limpiar urgente, el mundo llama al limpiador
@@ -104,7 +104,10 @@ public class Limpiador : MonoBehaviour
             {
                 salaLimpiando = mundo.cirugiasSucias[0];
                 mundo.salasSucias.Remove(salaLimpiando);
-                targetUrgencias.libre = true;
+                if (targetUrgencias != null)
+                {
+                    targetUrgencias.libre = true;
+                }
                 targetUrgencias = salaLimpiando.posicionLimpiador;
                 myFSM.Fire("hay quirofano limpiar");
 
@@ -112,9 +115,13 @@ public class Limpiador : MonoBehaviour
             {
                 salaLimpiando = mundo.salasSucias[0];
                 mundo.salasSucias.Remove(salaLimpiando);
-                targetUrgencias.libre = true;
+                if (targetUrgencias != null)
+                {
+                    targetUrgencias.libre = true;
+                }
                 targetUrgencias = salaLimpiando.posicionLimpiador;
-                myFSM.Fire("hay sala limpiar");
+                haySalaLimpiar.Fire();
+                //myFSM.Fire("hay sala limpiar");
             }
 
         }else if (myFSM.GetCurrentState().Name.Equals(esperandoConsultarPantalla.Name))
@@ -128,6 +135,7 @@ public class Limpiador : MonoBehaviour
                     targetUrgencias = mundo.targetLimpiadores[targetUrgenciasID];
                     targetUrgencias.libre = false;
                     personaje.GoTo(targetUrgencias);
+                   
                 }
             }
             

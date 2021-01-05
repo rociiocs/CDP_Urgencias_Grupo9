@@ -38,25 +38,31 @@ public class Sala
     {
         if(tipo != TipoSala.ESPERA)
         {
-            //if (posicionPaciente.libre || posicionProfesional.libre || posicionLimpiador.libre)
-            //{
-            if (posicionPaciente.libre)
+            if ((!libre) && (!posicionProfesional.libre))
             {
-                libre = true;
-            }
-            else
-            {
-                libre = false;
+                if (porcentajeSuciedad < limiteSuciedad)
+                {
+                    porcentajeSuciedad += speedSuciedad;
+                }
+                if (porcentajeSuciedad >= umbral)
+                {
+                    sucio = true;
+                    if (!heLlamadoAlMundo)
+                    {
+                        heLlamadoAlMundo = true;
+                        return true;
+                    }
+                }
+
             }
         }
-        
-        if (!libre)
+        else
         {
             if (porcentajeSuciedad < limiteSuciedad)
             {
                 porcentajeSuciedad += speedSuciedad;
             }
-            if(porcentajeSuciedad>= umbral)
+            if (porcentajeSuciedad >= umbral)
             {
                 sucio = true;
                 if (!heLlamadoAlMundo)
@@ -65,8 +71,9 @@ public class Sala
                     return true;
                 }
             }
-
         }
+        
+     
         return false;
 
 
