@@ -7,8 +7,8 @@ public class Cirujano : MonoBehaviour
 {
     //Variables
     public int timeJornada = 2000;
-    int timeOperar = 10;
-    int timeExaminar = 5;
+    int timeOperar = 5;
+    int timeExaminar = 3;
 
     Personaje personaje;
     TargetUrgencias targetUrgencias;
@@ -48,7 +48,7 @@ public class Cirujano : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => PutEmoji(emoEsperarPaciente));
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); sala.libre = true; Debug.Log(myFSM.GetCurrentState().Name); });
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
@@ -57,7 +57,7 @@ public class Cirujano : MonoBehaviour
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado); //Mirar
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado);
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si termina el tiempo de operar
@@ -102,7 +102,8 @@ public class Cirujano : MonoBehaviour
                     quirofanos[i].posicionProfesional.libre = false;
                     sala = quirofanos[i];
                     targetUrgencias = sala.posicionProfesional;
-                    targetPaciente = sala.posicionProfesional;
+                    targetPaciente = sala.posicionPaciente;
+                    sala.libre = true;
                     myFSM.Fire("comienza jornada");
                     return;
                 }
@@ -115,6 +116,7 @@ public class Cirujano : MonoBehaviour
             mundo.SalaCirugiaSucia(sala);
         }
         */
+        Debug.Log(myFSM.GetCurrentState().Name);
     }
 
     private void PutEmoji(Sprite emoji)
@@ -126,7 +128,7 @@ public class Cirujano : MonoBehaviour
     {
         //Nav Mesh ir al target puesto
         targetUrgencias.libre = false;
-        sala.libre = false;
+        //sala.libre = false;
         personaje.GoTo(targetUrgencias);
     }
 
@@ -142,6 +144,8 @@ public class Cirujano : MonoBehaviour
 
     private void examinandoPacienteAction()
     {
+        Debug.Log(myFSM.GetCurrentState().Name);
+        paciente = targetPaciente.actual.GetComponent<Paciente>();
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;
         //Do animacion examinar
@@ -150,12 +154,24 @@ public class Cirujano : MonoBehaviour
 
     private void operandoPacienteAction()
     {
+        paciente.personaje.tumbarse();
         //Do animacion operar
         PutEmoji(emoOperacion);
     }
 
     private void llamarLimpiadorAction()
     {
+        paciente.personaje.levantarseOperacion();
+        paciente.siguientePaso();
+        if (paciente.pasoActual== Paso.UCI)
+        {
+            paciente.myFSMVivo.Fire("acudir a la UCI");
+        }
+        else
+        {
+            paciente.myFSMVivo.Fire("acudir casa");
+        }
+        targetPaciente.ocupado = false;
         mundo.SalaCirugiaSucia(sala);
         myFSM.Fire("llamado limpiador");
     }

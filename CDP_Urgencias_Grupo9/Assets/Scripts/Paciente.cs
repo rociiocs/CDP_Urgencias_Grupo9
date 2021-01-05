@@ -31,7 +31,7 @@ public class Paciente : MonoBehaviour
     //referencias
     public Image emoticono;
     public Sprite emoMuerto;
-    private Personaje personaje;
+    public Personaje personaje;
     public Enfermedad enfermedad;
     public bool tieneBote;
     public bool urgente;
@@ -54,6 +54,7 @@ public class Paciente : MonoBehaviour
     public StateMachineEngine myFSMVivo;
     public StateMachineEngine myFSMColaFuera;
     public StateMachineEngine myFSMColaDentro;
+    public StateMachineEngine myFSMColaUrgente;
     public StateMachineEngine myFSMAnalisisOrina;
     public StateMachineEngine myFSMEsperandoSala;
 
@@ -67,6 +68,7 @@ public class Paciente : MonoBehaviour
     State acudirCeladorSala;
     State esperandoSalaUrgente;
     State siendoAtendidoCelador;
+    State haciendoColaUrgente;
 
     //No urgente
     State haciendoColaFuera; //Submáquina
@@ -86,16 +88,18 @@ public class Paciente : MonoBehaviour
     State siendoAtendidoConsulta;
     State yendoSala;
     State yendoUCI;
-    State llegadaUCI;
     State yendoCasa;
     State casaFin;
 
-    //Subestados haciendo cola fuera y cola dentro
+    //Subestados haciendo cola fuera, cola dentro y cola de urgentes
     State esperandoCola;
     State avanzandoCola;
 
     State esperandoColaDentro;
     State avanzandoColaDentro;
+
+    State esperandoColaUrgente;
+    State avanzandoColaUrgente;
 
     //Subestados esperando sala espera
     State esperandoDePie;
@@ -114,15 +118,16 @@ public class Paciente : MonoBehaviour
     public Perception soyLeve;
     void Start()
     {
+        //Referencias
         personaje = GetComponent<Personaje>();
         mundo = FindObjectOfType<Mundo>();
-
-
-
+        
+        //Máquinas de estados y submáquinas
         myFSM = new StateMachineEngine(false);
         myFSMVivo = new StateMachineEngine(BehaviourEngine.IsASubmachine);
         myFSMColaFuera = new StateMachineEngine(BehaviourEngine.IsASubmachine);
         myFSMColaDentro = new StateMachineEngine(BehaviourEngine.IsASubmachine);
+        myFSMColaUrgente = new StateMachineEngine(BehaviourEngine.IsASubmachine);
         myFSMAnalisisOrina = new StateMachineEngine(BehaviourEngine.IsASubmachine);
         myFSMEsperandoSala = new StateMachineEngine(BehaviourEngine.IsASubmachine);
 
@@ -133,23 +138,19 @@ public class Paciente : MonoBehaviour
         casaFin = myFSM.CreateState("casaFin", () => { mundo.PacienteMenos(personaje);  Destroy(gameObject); });
 
         //Submáquina vivo
-
-
-        yendoCentro = myFSMVivo.CreateEntryState("yendoCentro", () => { targetUrgenciasID = mundo.targetColaFuera.Length; });
+        yendoCentro = myFSMVivo.CreateEntryState("yendoCentro", yendoCentroAction);
         llegadaCentro = myFSMVivo.CreateState("llegadaCentro");
         entrandoCentro = myFSMVivo.CreateState("entrandoCentro", entrandoCentroAction);
-        entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente", entrandoCentroAction); 
-        siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano");
+        entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente", entrandoCentroAction);
+        siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano", ()=>targetUrgencias.ocupado = true);
         siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta");//,()=> Debug.Log("SIENDO ATENDIDO"));
-        yendoSala = myFSMVivo.CreateState("yendoSala",()=>GoTo(targetUrgencias));
-        yendoUCI = myFSMVivo.CreateState("yendoUCI");
-        llegadaUCI = myFSMVivo.CreateState("llegadaUCI");
-        yendoCasa = myFSMVivo.CreateState("yendoCasa");
+        yendoSala = myFSMVivo.CreateState("yendoSala",()=> { personaje.levantarse(); GoTo(targetUrgencias); });
+        yendoUCI = myFSMVivo.CreateState("yendoUCI",()=> GoTo(mundo.casa));
+        yendoCasa = myFSMVivo.CreateState("yendoCasa", () => GoTo(mundo.casaPaciente));
 
 
         //No urgentes
         siendoAtendidoCeladorMostrador = myFSMVivo.CreateState("siendoAtendidoCeladorMostrador");
-
         yendoSalaEspera = myFSM.CreateState("yendoSalaEspera");
 
         //Urgentes
@@ -158,36 +159,36 @@ public class Paciente : MonoBehaviour
         esperandoSalaUrgente = myFSMVivo.CreateState("esperandoSalaUrgente");
         
         //Cola fuera
-      
         esperandoCola = myFSMColaFuera.CreateEntryState("esperandoCola");
         avanzandoCola = myFSMColaFuera.CreateState("avanzandoCola", avanzandoColaAction);
 
         //Cola dentro
-      
-        esperandoColaDentro = myFSMColaDentro.CreateEntryState("esperandoCola");
-        avanzandoColaDentro = myFSMColaDentro.CreateState("avanzandoCola", avanzandoColaDentroAction);
+        esperandoColaDentro = myFSMColaDentro.CreateEntryState("esperandoColaDentro");
+        avanzandoColaDentro = myFSMColaDentro.CreateState("avanzandoColaDentro", avanzandoColaDentroAction);
+
+        //Cola urgente
+        esperandoColaUrgente = myFSMColaUrgente.CreateEntryState("esperandoColaUrgente");
+        avanzandoColaUrgente = myFSMColaUrgente.CreateState("avanzandoColaUrgente", avanzandoColaUrgenteAction);
 
         //Analisis de orina
-
         yendoBaño = myFSMAnalisisOrina.CreateEntryState("yendoBaño", irBanhoAction);
         tomandoMuestra = myFSMAnalisisOrina.CreateState("tomandoMuestra");
         volviendoSitio = myFSMAnalisisOrina.CreateState("volviendoSitio",()=>GoTo(targetUrgencias));
 
         //Esperando sala espera
-
         esperandoDePie = myFSMEsperandoSala.CreateEntryState("esperandoDePie",ocupandoDePieAction);//,  () => GoTo(mundo.asientos[0]));//targetUrgencias.libre = true);
-
         ocupandoAsiento = myFSMEsperandoSala.CreateState("ocupandoAsiento", ocupandoAsientoAction);
 
 
         Perception estoyVivoPerception = myFSM.CreatePerception<ValuePerception>(() => estoyVivo);
-        Perception soyUrgente = myFSMVivo.CreatePerception<ValuePerception>(()=> enfermedad != null && enfermedad.urgente);
+        Perception soyUrgenteCeladorLibre = myFSMVivo.CreatePerception<ValuePerception>(()=> enfermedad != null && enfermedad.urgente && mundo.targetSalaPaciente[0].libre);
+        Perception soyUrgenteCeladorOcupado = myFSMVivo.CreatePerception<ValuePerception>(()=> enfermedad != null && enfermedad.urgente && !mundo.targetSalaPaciente[0].libre);
         Perception haEntradoCentro = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         Perception celadorLibreSala = myFSMVivo.CreatePerception<ValuePerception>(()=>!targetUrgencias.libre); //
         //El celador hace push al personaje
         Perception atendidoCelador = myFSMVivo.CreatePerception<PushPerception>(); 
         //El mundo hace push al paciente cuando hay sala libre
-         SalaAsignadaLibre = myFSMVivo.CreatePerception<PushPerception>(); 
+        SalaAsignadaLibre = myFSMVivo.CreatePerception<PushPerception>(); 
         Perception heLlegadoSala = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado); 
         //El cirujano lo manda a la UCI
         Perception soyGrave = myFSMVivo.CreatePerception<PushPerception>(); 
@@ -199,7 +200,9 @@ public class Paciente : MonoBehaviour
         Perception heMuerto = myFSM.CreatePerception<TimerPerception>(enfermedad.timerEnfermedad);
 
         Perception noSoyUrgente = myFSMVivo.CreatePerception<ValuePerception>(() => enfermedad!=null&&!enfermedad.urgente);
-        Perception hayHueco = myFSMColaFuera.CreatePerception<ValuePerception>(() =>  targetUrgenciasID != 0&&mundo.targetColaFuera[targetUrgenciasID-1].libre );
+        Perception hayHueco = myFSMColaFuera.CreatePerception<ValuePerception>(() =>  targetUrgenciasID != 0 && mundo.targetColaFuera[targetUrgenciasID-1].libre );
+        Perception heAvanzadoUrgente = myFSMColaFuera.CreatePerception<ValuePerception>(() => personaje.haLlegado);
+        Perception hayHuecoUrgente = myFSMColaUrgente.CreatePerception<ValuePerception>(() =>  targetUrgenciasID != 0 && mundo.targetColaUrgentes[targetUrgenciasID-1].libre );
         Perception heAvanzado = myFSMColaFuera.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         Perception noHayAforo = myFSMVivo.CreatePerception<ValuePerception>(() => targetUrgenciasID == 0 && mundo.aforo);
 
@@ -231,17 +234,21 @@ public class Paciente : MonoBehaviour
         haciendoAnalisisOrina = myFSMVivo.CreateSubStateMachine("haciendoAnalisisOrina", myFSMAnalisisOrina,yendoBaño);
         haciendoColaDentro = myFSMVivo.CreateSubStateMachine("haciendoColaDentro", myFSMColaDentro);
         haciendoColaFuera = myFSMVivo.CreateSubStateMachine("haciendoColaFuera", myFSMColaFuera, esperandoCola);
+        haciendoColaUrgente = myFSMVivo.CreateSubStateMachine("haciendoColaurgente", myFSMColaUrgente);
 
 
         //Submaquinas
 
         //Transiciones
         myFSM.CreateTransition("aparecer", casa, estoyVivoPerception, vivo);
-        myFSMVivo.CreateTransition("he llegado centro y soy urgente", yendoCentro, soyUrgente, entrandoCentroUrgente);
+        myFSMVivo.CreateTransition("llegado centro, soy urgente y celador libre", yendoCentro, soyUrgenteCeladorLibre, entrandoCentroUrgente);
+        myFSMVivo.CreateTransition("llegado centro, soy urgente y hago cola", yendoCentro, soyUrgenteCeladorOcupado, haciendoColaUrgente);
+        myFSMColaUrgente.CreateTransition("hay hueco libre", esperandoColaUrgente, hayHuecoUrgente, avanzandoColaUrgente);
+        myFSMColaUrgente.CreateTransition("he avanzado urgente", avanzandoColaUrgente, heAvanzadoUrgente, esperandoColaUrgente);
+        myFSMColaUrgente.CreateExitTransition("celador libre", esperandoColaUrgente, soyUrgenteCeladorLibre, entrandoCentroUrgente);
+
         myFSMVivo.CreateTransition("he llegado centro y no soy urgente", yendoCentro, noSoyUrgente, haciendoColaFuera);
-
-
-
+        
         myFSMVivo.CreateTransition("acudiendo celador", entrandoCentroUrgente, celadorLibreSala, acudirCeladorSala);    
         myFSMVivo.CreateTransition("ser atendido celador", acudirCeladorSala, heLlegado, siendoAtendidoCelador);    
         myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido, urgente? esperandoSalaUrgente: esperandoSalaEspera);    
@@ -312,6 +319,7 @@ public class Paciente : MonoBehaviour
         myFSM.Update();
         myFSMAnalisisOrina.Update();
         myFSMColaDentro.Update();
+        myFSMColaUrgente.Update();
         myFSMColaFuera.Update();
         myFSMEsperandoSala.Update();
         myFSMVivo.Update();
@@ -343,12 +351,9 @@ public class Paciente : MonoBehaviour
         }
         if (urgente)
         {
-           // Debug.Log(myFSMVivo.GetCurrentState().Name);
+           //Debug.Log(myFSMVivo.GetCurrentState().Name);
+           //Debug.Log(myFSMColaUrgente.GetCurrentState().Name);
         }
-        //Debug.Log("fsm" + myFSM.GetCurrentState().Name);
-        //Debug.Log("fsmVivo " + myFSMVivo.GetCurrentState().Name);
-        //Debug.Log("fsmColaFuera " + myFSMColaFuera.GetCurrentState().Name);
-        //Debug.Log("fsmColadentro " + myFSMColaDentro.GetCurrentState().Name);
 
         if (myFSMEsperandoSala.GetCurrentState().Name.Equals(ocupandoAsiento.Name))
         {
@@ -410,13 +415,26 @@ public class Paciente : MonoBehaviour
         targetUrgencias.libre = false;
         GoTo(targetUrgencias);
     }
+    private void avanzandoColaUrgenteAction()
+    {
+        //Debug.Log("avanzandocolaadentroction");
+        if (targetUrgencias != null)
+        {
+            targetUrgencias.libre = true;
+        }
+        targetUrgencias = mundo.targetColaUrgentes[targetUrgenciasID - 1];
+        targetUrgenciasID--;
+        targetUrgencias.libre = false;
+        GoTo(targetUrgencias);
+    }
+
     private void entrandoCentroAction()
     {
         if (urgente)
         {
-            for(int i=0; i < mundo.targetEsperaSala.Length; i++)
+            for(int i=0; i < mundo.targetSalaPaciente.Length; i++)
             {
-                targetUrgencias = mundo.targetEsperaSala[i];
+                targetUrgencias = mundo.targetSalaPaciente[i];
                 targetUrgencias.libre = false;
                 GoTo(targetUrgencias);
                 break;
@@ -473,6 +491,7 @@ public class Paciente : MonoBehaviour
     //REVISAR
     private bool mostradorLibre()
     {
+        //Debug.Log("hay mostrador libre");
         for(int i=0; i< mundo.targetMostradorPaciente.Length; i++)
         {
             if ((mundo.targetMostradorPaciente[i].ocupado)&&(mundo.targetMostradorPaciente[i].libre))
@@ -483,13 +502,32 @@ public class Paciente : MonoBehaviour
                 targetUrgencias = mundo.targetMostradorPaciente[i];
                 targetUrgenciasID = i;
                 GoTo(targetUrgencias);
-                targetUrgencias.ocupado = true;
                 return true;
             }
         }
         return false;
     }
 
+    private void yendoCentroAction()
+    {
+        if (urgente)
+        {
+            targetUrgenciasID = mundo.targetColaUrgentes.Length;
+            for (int i = 0; i < mundo.targetColaUrgentes.Length; i++)
+            {
+                if (mundo.targetColaUrgentes[i].libre)
+                {
+                    targetUrgenciasID = i + 1;
+                    return;
+                }
+            }
+        }
+        else
+        {
+            targetUrgenciasID = mundo.targetColaFuera.Length;
+            
+        }
+    }
     IEnumerator Die()
     {
         //Los dos primeros segundos son maomenos el tiempo que tarde en segundos en caer al suelo durante la animación de morirse
@@ -503,4 +541,5 @@ public class Paciente : MonoBehaviour
         yield return new WaitForSeconds(2.5f);
         myFSM.Fire("desaparecer");
     }
+   
 }

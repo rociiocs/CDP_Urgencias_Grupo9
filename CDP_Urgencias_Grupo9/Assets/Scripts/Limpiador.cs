@@ -50,8 +50,8 @@ public class Limpiador : MonoBehaviour
         irQuirofano = myFSM.CreateState("irQuirofano", irSalaAction);
         esperandoConsultarPantalla = myFSM.CreateState("esperandoConsultarPantalla", () =>PutEmoji(emoConsultarPantalla));
         consultandoPantalla = myFSM.CreateState("consultandoPantalla", () => PutEmoji(emoConsultarPantalla));
-        limpiandoQuirofano = myFSM.CreateState("limpiandoQuirofano", () => PutEmoji(emoLimpiando));
-        limpiandoSala = myFSM.CreateState("limpiandoSala", () => PutEmoji(emoLimpiando));
+        limpiandoQuirofano = myFSM.CreateState("limpiandoQuirofano", () => { PutEmoji(emoLimpiando); personaje.limpiando(true); });
+        limpiandoSala = myFSM.CreateState("limpiandoSala", () => { PutEmoji(emoLimpiando); personaje.limpiando(true); });
 
 
         //Create perceptions
@@ -157,6 +157,13 @@ public class Limpiador : MonoBehaviour
 
     private void irPantallaAction()
     {
+        personaje.limpiando(false);
+        if (salaLimpiando!= null)
+        {
+            salaLimpiando.sucio = false;
+            salaLimpiando.heLlamadoAlMundo = false;
+        }
+        
         //Nav Mesh ir al target puesto
         //Si el puesto de trabajo está libre
         for (int i = 0; i < mundo.targetLimpiadores.Length; i++)

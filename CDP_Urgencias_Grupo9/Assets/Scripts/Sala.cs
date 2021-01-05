@@ -60,7 +60,10 @@ public class Sala
         {
             if (porcentajeSuciedad < limiteSuciedad)
             {
-                porcentajeSuciedad += speedSuciedad;
+                if(tipo!= TipoSala.CIRUGIA)
+                {
+                    porcentajeSuciedad += speedSuciedad;
+                }
             }
             if (porcentajeSuciedad >= umbral)
             {

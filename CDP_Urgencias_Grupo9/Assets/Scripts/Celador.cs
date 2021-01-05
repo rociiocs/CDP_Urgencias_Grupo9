@@ -70,7 +70,7 @@ public class Celador : MonoBehaviour
         atendiendoPaciente = myFSMMostrador.CreateState("atendiendoPaciente", atendiendoPacienteAction);
         esperandoCompañero = myFSM.CreateState("esperandoCompañero");
         atendiendoUrgente = myFSMSala.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
-        paseandoSala = myFSMSala.CreateEntryState("paseandoSala", () => esperandoPacienteAction());
+        paseandoSala = myFSMSala.CreateEntryState("paseandoSala",esperandoPacienteAction);
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarCelador(personaje.nombre); Destroy(this.gameObject); });
         mostrador = myFSM.CreateSubStateMachine("mostrador", myFSMMostrador);
         salaState = myFSM.CreateSubStateMachine("salaState", myFSMSala);
@@ -230,12 +230,12 @@ public class Celador : MonoBehaviour
         }
     }
     private void esperandoPacienteActionMostrador()
-    { 
+    {
         PutEmoji(emoEsperarPaciente);
         turnoSala = false;
         if (paciente != null)
         {
-            
+
             mandarPacienteListaEspera();
             paciente.heSidoAtendido.Fire();
         }
@@ -263,7 +263,7 @@ public class Celador : MonoBehaviour
                     sala.posicionSalaProfesional[i].libre = false;
                     //sala.posicionSalaProfesional[i].libre = false;
                     targetUrgenciasSala = sala.posicionSalaProfesional[i];
-                    targetPacienteSala = sala.posicionSalaPaciente[i]; 
+                    targetPacienteSala = sala.posicionSalaPaciente[i];
                     //sala.posicionSalaProfesional[i].ocupado = false;
                     return true;
                 }

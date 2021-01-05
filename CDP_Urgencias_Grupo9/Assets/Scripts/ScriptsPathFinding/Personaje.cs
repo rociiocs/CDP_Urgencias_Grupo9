@@ -90,9 +90,23 @@ public class Personaje: MonoBehaviour
     public void sentarse()
     {
         animator.SetBool("Sitting", true);
+        //this.transform.position = this.transform.position - (this.transform.forward * -0.5f);
     }
     public void levantarse()
     {
         animator.SetBool("Sitting", false);
+    }
+    public void tumbarse()
+    {
+        animator.SetBool("Tumbarse", true);
+    }
+    public void limpiando(bool limpiando)
+    {
+        animator.SetBool("Limpiando", limpiando);
+    }
+
+    public void levantarseOperacion()
+    {
+        animator.SetBool("Tumbarse", false);
     }
 }

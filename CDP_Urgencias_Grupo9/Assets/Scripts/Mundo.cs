@@ -42,6 +42,7 @@ public class Mundo: MonoBehaviour
     public Sprite[] emoticonoEnfermedad;
     public List<Enfermedad> enfermedades = new List<Enfermedad>();
     public List<Sala> salas = new List<Sala>();
+    public List<Sala> salasLimpiables = new List<Sala>();
     public List<Sala> salasSucias = new List<Sala>();
     public List<Sala> cirugiasSucias = new List<Sala>();
     public List<Paciente> listaEsperaEnfermeria = new List<Paciente>();
@@ -60,14 +61,13 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias[] targetEnfermeriaPaciente;
     public TargetUrgencias[] targetLimpiadores;
     public TargetUrgencias[] targetLimpiadoresSala;
-
     public TargetUrgencias[] targetEsperaMostrador;
     public TargetUrgencias[] targetEsperaSala;
     public TargetUrgencias[] targetMostradorPaciente;
     public TargetUrgencias[] targetSalaPaciente;
-
     public TargetUrgencias[] targetColaDentro;
     public TargetUrgencias[] targetColaFuera;
+    public TargetUrgencias[] targetColaUrgentes;
     public TargetUrgencias[] asientos;
     public TargetUrgencias[] dePie;
     public TargetUrgencias[] banhos;
@@ -107,8 +107,8 @@ public class Mundo: MonoBehaviour
             salas.Add(nueva);
             if (i%2!=0)//impares
             {
-              
                 ID++;
+                salasLimpiables.Add(nueva);
             }
          
         }
@@ -119,10 +119,9 @@ public class Mundo: MonoBehaviour
             nueva.posicionProfesional = targetCirujano[i];
             salas.Add(nueva);
             nueva.posicionLimpiador = targetLimpiadoresSala[ID];
-        
-                ID++;
+            salasLimpiables.Add(nueva);
+            ID++;
             
-           
         }
         for (int i = 0; i <numMedicoP; i++)
         {
@@ -133,8 +132,8 @@ public class Mundo: MonoBehaviour
             salas.Add(nueva);
             nueva.posicionLimpiador = targetLimpiadoresSala[ID];
            
-                ID++;
-            
+            ID++;
+            salasLimpiables.Add(nueva);
         }
         SalaEspera espera = new SalaEspera(TipoSala.ESPERA, ID);
         espera.posicionMostradorProfesional = targetEsperaMostrador;
@@ -143,7 +142,7 @@ public class Mundo: MonoBehaviour
         espera.posicionSalaPaciente = targetSalaPaciente;
         espera.posicionLimpiador = targetLimpiadoresSala[targetLimpiadoresSala.Length-1];
         salas.Add(espera);
-
+        salasLimpiables.Add(espera);
 
         //Creacion de Base de datos de Enfermedades
         //Cistitis
@@ -251,7 +250,7 @@ public class Mundo: MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        foreach (Sala s  in salas)
+        foreach (Sala s in salasLimpiables)
         {
             if (s.OnUpdateMundo(umbral, limitePorcentaje, speedSuciedad))
             {
@@ -397,23 +396,35 @@ public class Mundo: MonoBehaviour
     {
         sala.sucio = true;
         sala.porcentajeSuciedad = 100;
-        
     }
     private void ComprobarLibre(List<Paciente> listaEspera, List<Sala> salas)
     {
       
         foreach (Sala s in salas)
         {
+            if(s.tipo == TipoSala.CIRUGIA)
+            {
+                float i;
+            }
             if (listaEspera.Count != 0)
             {
-                if ((s.libre)&&(!s.posicionProfesional.libre))
+                if ((s.libre)&&(!s.posicionProfesional.libre) && (s.posicionPaciente.libre))
                 {
                     Paciente llamado = listaEspera[0];
                     s.libre = false;
                     listaEspera.RemoveAt(0);
                     llamado.targetUrgencias = s.posicionPaciente;
+                    if (s.tipo == TipoSala.CIRUGIA)
+                    {
+                        llamado.myFSMVivo.Fire("acudir quirofano");
+                    }
+                    else
+                    {
+                        llamado.SalaAsignadaLibre.Fire();
+                    }
+                       
 
-                    llamado.SalaAsignadaLibre.Fire();
+                    
                     //deberia decrile con un valor o un fire que ha sido llamado?
                 }
             }
@@ -448,7 +459,7 @@ public class Mundo: MonoBehaviour
             nombres.RemoveAt(0);
             nuevo.GetComponent<Personaje>().nombre = nombre;
             sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
-            int enfermedad = (int)Random.Range(0, enfermedades.Count-4);
+            int enfermedad = (int)Random.Range(0, enfermedades.Count);
             Enfermedad aux = enfermedades[enfermedad];
             nuevo.setEnfermedad(aux, emoticonoEnfermedad[(int)aux.tipoEnfermedad]);
             
