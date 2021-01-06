@@ -137,7 +137,7 @@ public class Personaje: MonoBehaviour
     }
     public void levantarseOperacion()
     {
-        if (posicionAnterior != Vector3.zero)
+        if (posicionAnterior != Vector3.zero && this.gameObject!=null)
         {
             transform.position = posicionAnterior;
             posicionAnterior = Vector3.zero;

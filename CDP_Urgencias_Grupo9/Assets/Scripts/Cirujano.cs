@@ -48,7 +48,7 @@ public class Cirujano : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); sala.libre = true; Debug.Log(myFSM.GetCurrentState().Name); });
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); sala.libre = true;  }); //Debug.Log(myFSM.GetCurrentState().Name);
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
@@ -116,7 +116,7 @@ public class Cirujano : MonoBehaviour
             mundo.SalaCirugiaSucia(sala);
         }
         */
-        Debug.Log(myFSM.GetCurrentState().Name);
+        //Debug.Log(myFSM.GetCurrentState().Name);
     }
 
     private void PutEmoji(Sprite emoji)
@@ -145,7 +145,7 @@ public class Cirujano : MonoBehaviour
     private void examinandoPacienteAction()
     {
         personaje.Hablando(true);
-        Debug.Log(myFSM.GetCurrentState().Name);
+        //Debug.Log(myFSM.GetCurrentState().Name);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;

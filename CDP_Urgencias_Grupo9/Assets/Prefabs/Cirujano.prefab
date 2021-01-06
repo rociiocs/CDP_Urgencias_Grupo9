@@ -1262,7 +1262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ed7c7ed741299f4e9ac16706720596a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeJornada: 1000
+  timeJornada: 60
   emoticono: {fileID: 3702990670173213877}
   emoOperacion: {fileID: 21300000, guid: 160f43dacaaf13f46b8275a7ac7e990c, type: 3}
   emoExaminar: {fileID: 21300000, guid: b02fc05f58b9b4d499c16007efde209c, type: 3}

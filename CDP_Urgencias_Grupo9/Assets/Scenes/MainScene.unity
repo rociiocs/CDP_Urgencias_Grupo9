@@ -30098,6 +30098,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 290102431193226509, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: timeJornada
+      value: 60
+      objectReference: {fileID: 0}
     - target: {fileID: 717938352603232509, guid: 37b8389e404b47a44a19105a42ede2e9,
         type: 3}
       propertyPath: nombre
@@ -30172,6 +30177,16 @@ PrefabInstance:
         type: 3}
       propertyPath: dePie.Array.size
       value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4677569260290137175, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: targetSalaPaciente.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4677569260290137175, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: targetEsperaSala.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4677569260290137175, guid: 37b8389e404b47a44a19105a42ede2e9,
         type: 3}
@@ -30674,6 +30689,36 @@ PrefabInstance:
       propertyPath: nUCIText
       value: 
       objectReference: {fileID: 318803941}
+    - target: {fileID: 4677569260290137175, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: targetEsperaSala
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4677569260290137175, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: targetSalaPaciente
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4677569261926437065, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: timeJornada
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5793539309858326168, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: timeJornada
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497444722938512672, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: timeJornada
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851627390648215209, guid: 37b8389e404b47a44a19105a42ede2e9,
+        type: 3}
+      propertyPath: timeJornada
+      value: 60
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37b8389e404b47a44a19105a42ede2e9, type: 3}
 --- !u!23 &4690399222540045505

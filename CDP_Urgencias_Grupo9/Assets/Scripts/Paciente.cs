@@ -124,6 +124,8 @@ public class Paciente : MonoBehaviour
     Perception estoySiendoAtendio;
     Perception noPuedoMorirAun;
 
+    public float timeMorir;
+
     void Start()
     {
         //Referencias
@@ -150,7 +152,7 @@ public class Paciente : MonoBehaviour
         llegadaCentro = myFSMVivo.CreateState("llegadaCentro");
         entrandoCentro = myFSMVivo.CreateState("entrandoCentro", entrandoCentroAction);
         entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente", entrandoCentroAction);
-        siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano", ()=> { targetUrgencias.ocupado = true; estoySiendoAtendidoFlag = true; });
+        siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano", ()=> { targetUrgencias.ocupado = true; estoySiendoAtendidoFlag = true;  });
         siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta");//,()=> Debug.Log("SIENDO ATENDIDO"));
         yendoSala = myFSMVivo.CreateState("yendoSala",()=> { personaje.levantarse(); GoTo(targetUrgencias);estoySiendoAtendidoFlag = true; });
         yendoUCI = myFSMVivo.CreateState("yendoUCI",()=> { GoTo(mundo.casa); mundo.nUCI++;mundo.nUCIText.text = mundo.nUCI.ToString(); emoticono.sprite = emoUCI;estoySiendoAtendidoFlag = true; });
@@ -205,7 +207,7 @@ public class Paciente : MonoBehaviour
         //Si ha llegado a casa o a la uci
         Perception heLlegado = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         //Si he muerto, timer de la enfermedad
-        seMeAcaboElTiempo = myFSMVivo.CreatePerception<TimerPerception>(enfermedad.timerEnfermedad);
+        seMeAcaboElTiempo = myFSMVivo.CreatePerception<TimerPerception>(timeMorir);
         estoySiendoAtendio = myFSMVivo.CreatePerception<ValuePerception>(() =>! estoySiendoAtendidoFlag);
         Perception heMuerto = myFSMVivo.CreateAndPerception<AndPerception>(estoySiendoAtendio, seMeAcaboElTiempo);
         // Perception heMuerto = myFSMVivo.CreatePerception<TimerPerception>(enfermedad.timerEnfermedad);
@@ -338,7 +340,10 @@ public class Paciente : MonoBehaviour
         myFSMEsperandoSala.Update();
         myFSMVivo.Update();
         timeEspera += Time.deltaTime;
-
+        if (myFSMVivo.GetCurrentState().Name.Equals(siendoAtendidoQuirofano.Name))
+        {
+            timeMorir += Time.deltaTime;
+        }
         if (morirse)
         {
             personaje.Morirse();
@@ -359,7 +364,7 @@ public class Paciente : MonoBehaviour
                     mundo.PacienteMenos(personaje);
                     mundo.nMuertes++;
                     mundo.numMuertosText.text = mundo.nMuertes.ToString();
-                    morirse = false;
+                    //morirse = false;
                 }
             }
         }
@@ -408,6 +413,7 @@ public class Paciente : MonoBehaviour
     {
         emoticono.sprite = emo;
         enfermedad = en;
+        timeMorir = enfermedad.timerEnfermedad;
         idPasoActual = 0;
         pasoActual = enfermedad.pasos[idPasoActual];
         urgente = enfermedad.urgente;
