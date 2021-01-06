@@ -47,10 +47,10 @@ public class Medico : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => {PutEmoji(emoEsperarPaciente); sala.libre = true;despachandoPacienteAction(); });
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => {PutEmoji(emoEsperarPaciente); sala.libre = true; });
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         //despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
-        despacharPaciente = myFSM.CreateState("despacharPaciente");
+        despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarMedico(personaje.nombre); Destroy(this.gameObject); });
 
 
@@ -129,7 +129,7 @@ public class Medico : MonoBehaviour
     {
         //Go to target casa
         targetUrgencias.libre = true;
-        sala.libre = true;
+        sala.libre = false;
         personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
     }
@@ -175,7 +175,6 @@ public class Medico : MonoBehaviour
         personaje.Hablando(false);
         if (paciente != null)
         {
-
             if (paciente.pasoActual == Paso.Casa)
             {
                 paciente.soyLeve.Fire();

@@ -71,8 +71,8 @@ public class Celador : MonoBehaviour
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
         esperarPaciente = myFSMMostrador.CreateEntryState("esperarPaciente", esperandoPacienteActionMostrador);
         atendiendoPaciente = myFSMMostrador.CreateState("atendiendoPaciente", atendiendoPacienteAction);
-        esperandoCompañeroM = myFSM.CreateState("esperandoCompañeroM");
-        esperandoCompañeroS = myFSM.CreateState("esperandoCompañeroS");
+        esperandoCompañeroM = myFSM.CreateState("esperandoCompañeroM",esperandoCompañeroMAction);
+        esperandoCompañeroS = myFSM.CreateState("esperandoCompañeroS",esperandoCompañeroSAction);
         atendiendoUrgente = myFSMSala.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
         paseandoSala = myFSMSala.CreateEntryState("paseandoSala",esperandoPacienteAction);
         casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarCelador(personaje.nombre); Destroy(this.gameObject); });
@@ -318,5 +318,26 @@ public class Celador : MonoBehaviour
             }
         }
         return false;
+    }
+
+    private void esperandoCompañeroMAction()
+    {
+        targetPaciente.ocupado = false;
+        if (paciente != null)
+        {
+            mandarPacienteListaEspera();
+            paciente.heSidoAtendido.Fire();
+            paciente = null;
+        }
+    }
+    private void esperandoCompañeroSAction()
+    {
+        targetPacienteSala.ocupado = false;
+        if (paciente != null)
+        {
+            mandarPacienteListaEspera();
+            paciente.heSidoAtendido.Fire();
+            paciente = null;
+        }
     }
 }

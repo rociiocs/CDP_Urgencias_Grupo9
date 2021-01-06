@@ -136,7 +136,7 @@ public class Cirujano : MonoBehaviour
     {
         //Go to target casa
         targetUrgencias.libre = true;
-        sala.libre = true;
+        sala.libre = false;
         personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
 
@@ -169,7 +169,7 @@ public class Cirujano : MonoBehaviour
         {
             paciente.myFSMVivo.Fire("acudir a la UCI");
         }
-        else
+        else if (paciente.pasoActual == Paso.Casa)
         {
             paciente.myFSMVivo.Fire("acudir casa");
         }
