@@ -197,18 +197,21 @@ public class Celador : MonoBehaviour
     private void atendiendoPacienteAction()
     {
         //Debug.Log(myFSMMostrador.GetCurrentState().Name);
+        personaje.Hablando(true);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;
         PutEmoji(emoAtender);
     }
     private void esperandoPacienteAction()
     {
+        personaje.Hablando(false);
         Debug.Log(myFSMSala.GetCurrentState().Name);
         turnoSala = true;
         if (paciente != null)
         {
             mandarPacienteListaEspera();
             paciente.heSidoAtendido.Fire();
+            paciente = null;
         }
         PutEmoji(emoEsperarPaciente);
     }
@@ -231,6 +234,7 @@ public class Celador : MonoBehaviour
     }
     private void esperandoPacienteActionMostrador()
     {
+        personaje.Hablando(false);
         PutEmoji(emoEsperarPaciente);
         turnoSala = false;
         if (paciente != null)
@@ -238,10 +242,12 @@ public class Celador : MonoBehaviour
 
             mandarPacienteListaEspera();
             paciente.heSidoAtendido.Fire();
+            paciente = null;
         }
     }
     private void atendiendoUrgenteAction()
     {
+        personaje.Hablando(true);
         Debug.Log(myFSMSala.GetCurrentState().Name);
         paciente = targetPacienteSala.actual.GetComponent<Paciente>();
         enfermedad = paciente.enfermedad;

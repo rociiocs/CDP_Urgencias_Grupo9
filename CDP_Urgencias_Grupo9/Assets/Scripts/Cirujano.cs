@@ -144,6 +144,7 @@ public class Cirujano : MonoBehaviour
 
     private void examinandoPacienteAction()
     {
+        personaje.Hablando(true);
         Debug.Log(myFSM.GetCurrentState().Name);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
         //Coger referencia paciente
@@ -161,6 +162,7 @@ public class Cirujano : MonoBehaviour
 
     private void llamarLimpiadorAction()
     {
+        personaje.Hablando(false);
         paciente.personaje.levantarseOperacion();
         paciente.siguientePaso();
         if (paciente.pasoActual== Paso.UCI)

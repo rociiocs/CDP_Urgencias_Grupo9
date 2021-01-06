@@ -616,9 +616,13 @@ MonoBehaviour:
   targetBanho: {fileID: 0}
   emoticono: {fileID: 7442635388730148812}
   emoMuerto: {fileID: 21300000, guid: 850aaf6b59e49b14a8294d80e3077ed1, type: 3}
+  emoCurado: {fileID: 21300000, guid: 859487de643a3c149b90318ae0514f2b, type: 3}
+  emoUCI: {fileID: 21300000, guid: 176beaa5142cdac4aa10119ebb71b1d3, type: 3}
+  personaje: {fileID: 0}
   tieneBote: 0
   urgente: 0
   estoyVivo: 1
+  estoySiendoAtendidoFlag: 0
   targetUrgencias: {fileID: 0}
   targetUrgenciasID: 0
   timerOrina: 5

@@ -15,6 +15,8 @@ public class Personaje: MonoBehaviour
     Transform target;
     TargetUrgencias targetU;
 
+    //Auxiliar camillas y sillas
+    Vector3 posicionAnterior;
     void Awake()
     {
         animator = GetComponentInChildren<Animator>();
@@ -43,7 +45,8 @@ public class Personaje: MonoBehaviour
         haLlegado = false;
         myAgent.Resume();
         myAgent.SetDestination(target.position);
-        animator.SetBool("Walking", true);
+        if(!animator.GetBool("Bote"))
+            animator.SetBool("Walking", true);
 
         //andando = true;
         this.target = target;
@@ -53,14 +56,19 @@ public class Personaje: MonoBehaviour
     void Update()
     {
         if (!muerto)
+            
         {
-            //Cuando llega al destino, la animacion se para
-            if ((AproximadamenteCero(myAgent.remainingDistance)) && (andando))
+            if (myAgent.enabled == true)
             {
-                DetenerPersonaje();
-                transform.rotation = target.rotation;
-                targetU.ocupado = false;
+                //Cuando llega al destino, la animacion se para
+                if ((AproximadamenteCero(myAgent.remainingDistance)) && (andando))
+                {
+                    DetenerPersonaje();
+                    transform.rotation = target.rotation;
+                    targetU.ocupado = false;
+                }
             }
+            
         }
     }
     public void DetenerPersonaje()
@@ -89,24 +97,52 @@ public class Personaje: MonoBehaviour
 
     public void sentarse()
     {
+        myAgent.enabled = false;
+        posicionAnterior = transform.position;
+        transform.position = targetU.transform.position;
         animator.SetBool("Sitting", true);
         //this.transform.position = this.transform.position - (this.transform.forward * -0.5f);
     }
     public void levantarse()
     {
+       
+        if (posicionAnterior !=Vector3.zero)
+        {
+            transform.position = posicionAnterior;
+            posicionAnterior = Vector3.zero;
+        }
+        myAgent.enabled = true;
+   
+       
         animator.SetBool("Sitting", false);
     }
     public void tumbarse()
     {
+        myAgent.enabled = false;
+        posicionAnterior = transform.position;
+        transform.position = targetU.transform.position;
         animator.SetBool("Tumbarse", true);
     }
     public void limpiando(bool limpiando)
     {
         animator.SetBool("Limpiando", limpiando);
     }
-
+    public void Hablando( bool value)
+    {
+        animator.SetBool("Hablando", value);
+    }
+    public void LlevandoBote(bool value)
+    {
+        animator.SetBool("Bote", value);
+    }
     public void levantarseOperacion()
     {
+        if (posicionAnterior != Vector3.zero)
+        {
+            transform.position = posicionAnterior;
+            posicionAnterior = Vector3.zero;
+        }
+        myAgent.enabled = true;
         animator.SetBool("Tumbarse", false);
     }
 }

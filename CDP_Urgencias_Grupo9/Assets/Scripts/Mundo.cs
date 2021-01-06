@@ -38,7 +38,7 @@ public class Mundo: MonoBehaviour
     //referencia al seleccionador de camara
     SeleccionadorCamara sc;
     //
-    public Text numMuertosText;
+    public Text numMuertosText,nRecuperadosText,nUCIText;
     public Sprite[] emoticonoEnfermedad;
     public List<Enfermedad> enfermedades = new List<Enfermedad>();
     public List<Sala> salas = new List<Sala>();
@@ -49,8 +49,9 @@ public class Mundo: MonoBehaviour
     public List<Paciente> listaEsperaMedico = new List<Paciente>();
     public List<Paciente> listaEsperaCirugia = new List<Paciente>();
     public List<Limpiador> listaLimpiadores = new List<Limpiador>();
-    private int numEnfermeria = 3, numMedico = 4, numCirugia = 2;
+    //private int numEnfermeria = 3, numMedico = 4, numCirugia = 2;
     private int numEnfermeriaP = 6, numMedicoP = 4, numCirugiaP = 2;
+    public int porcentajeUrgentes = 10;
     public int numEnfermeros = 3, numMedicos = 2, numCirujanos = 1, numCeladores = 2, numLimpiadores = 2;
     public float umbral= 65, speedSuciedad=0.01f, limitePorcentaje = 100;
     public TargetUrgencias[] targetMedico;
@@ -75,7 +76,7 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias laboratorio;
     public TargetUrgencias casa;
     public TargetUrgencias casaPaciente;
-    public int nMuertes = 0;
+    public int nMuertes = 0, nRecuperados = 0, nUCI = 0;
     private int MAX_PACIENTES = 15;
     //private float spawnMaxTime = 15f;
     //private float spawnMinTime = 9f;
@@ -392,6 +393,15 @@ public class Mundo: MonoBehaviour
     {
         salasSucias.Add(sala);
     }
+    public void EliminarListaEspera(Paciente p)
+    {
+        if (listaEsperaCirugia.Contains(p))
+            listaEsperaCirugia.Remove(p);
+        if (listaEsperaEnfermeria.Contains(p))
+            listaEsperaEnfermeria.Remove(p);
+        if (listaEsperaMedico.Contains(p))
+            listaEsperaMedico.Remove(p);
+    }
     public void SalaCirugiaSucia(Sala sala)
     {
         sala.sucio = true;
@@ -402,12 +412,13 @@ public class Mundo: MonoBehaviour
       
         foreach (Sala s in salas)
         {
-            if(s.tipo == TipoSala.CIRUGIA)
-            {
-                float i;
-            }
+           
             if (listaEspera.Count != 0)
             {
+                if (s.tipo == TipoSala.CIRUGIA)
+                {
+                    float i = 0;
+                }
                 if ((s.libre)&&(!s.posicionProfesional.libre) && (s.posicionPaciente.libre))
                 {
                     Paciente llamado = listaEspera[0];
@@ -416,7 +427,8 @@ public class Mundo: MonoBehaviour
                     llamado.targetUrgencias = s.posicionPaciente;
                     if (s.tipo == TipoSala.CIRUGIA)
                     {
-                        llamado.myFSMVivo.Fire("acudir quirofano");
+                        //llamado.myFSMVivo.Fire("acudir quirofano");
+                        llamado.SalaAsignadaLibre.Fire();
                     }
                     else
                     {
@@ -459,8 +471,23 @@ public class Mundo: MonoBehaviour
             nombres.RemoveAt(0);
             nuevo.GetComponent<Personaje>().nombre = nombre;
             sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
-            int enfermedad = (int)Random.Range(0, enfermedades.Count);
-            Enfermedad aux = enfermedades[enfermedad];
+            int esUrgente = (int)Random.Range(0, 100);
+            int enfermedad;
+            Enfermedad aux;
+            if (esUrgente < porcentajeUrgentes)
+            {
+                List<Enfermedad> urgentes = enfermedades.FindAll((e) => e.urgente);
+                enfermedad = (int)Random.Range(0, urgentes.Count);
+                 aux = urgentes[enfermedad];
+            }
+            else
+            {
+                List<Enfermedad> noUrgentes = enfermedades.FindAll((e) => !e.urgente);
+                enfermedad = (int)Random.Range(0, noUrgentes.Count);
+                aux = noUrgentes[enfermedad];
+            }
+           
+            
             nuevo.setEnfermedad(aux, emoticonoEnfermedad[(int)aux.tipoEnfermedad]);
             
         }

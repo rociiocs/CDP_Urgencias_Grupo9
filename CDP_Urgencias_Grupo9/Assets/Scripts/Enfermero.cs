@@ -52,12 +52,12 @@ public class Enfermero : MonoBehaviour
         State enCasa = myFSM.CreateEntryState("casa");
         State yendoPuesto = myFSM.CreateState("irPuestoTrabajo", () => { personaje.GoTo(puestoTrabajo); jornadaFlag = false; });
         State yendoCasa = myFSM.CreateState("irCasa", () => { PutEmoji(emoCasa); personaje.GoTo(mundo.casa); });
-        State esperando = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperando); sala.libre = true; DespacharPaciente(); });// idle
+        State esperando = myFSM.CreateState("esperarPaciente", () => { personaje.Hablando(false);personaje.LlevandoBote(false); PutEmoji(emoEsperando); sala.libre = true; DespacharPaciente(); });// idle
         State analisisSangre = myFSM.CreateState("analisisSangre", () => { Atender(emoSangre); });//animacion y emoticonillo
         State analisisOrina = myFSM.CreateState("analisisOrina", () => Atender(emoOrina));//animacion y emoticonillo
         State analisisPCR = myFSM.CreateState("analisisPCR", () => Atender(emoPCR)); //animacion y emoticonillo
         State suero = myFSM.CreateState("meterSuero", () => Atender(emoSuero));//animacion y emoticonillo;
-        State laboratorio = myFSM.CreateState("llevarLab", () => { DespacharPaciente(); PutEmoji(emoLAB); personaje.GoTo(mundo.laboratorio); puestoTrabajo.libre = false; });
+        State laboratorio = myFSM.CreateState("llevarLab", () => { DespacharPaciente(); personaje.LlevandoBote(true); PutEmoji(emoLAB); personaje.GoTo(mundo.laboratorio); puestoTrabajo.libre = false; });
         State darBote = myFSM.CreateState("darBote", () => DarBoteAction());//Darle al paciente  animacion y emoticono
         State examinarPaciente = myFSM.CreateState("examinar", () => ExaminarPaciente());//es un  micromomento
         State esperandoPacienteBanho = myFSM.CreateState("esperarBanho", () => PacienteABaño());
@@ -115,6 +115,7 @@ public class Enfermero : MonoBehaviour
     }
     private void PacienteABaño()
     {
+        personaje.Hablando(false);
         PutEmoji(emoEsperandoOrina);
         currentPaciente.targetBanho = banhoTarget;
         currentPaciente.tengoQueHacerAnalisisOrina.Fire();
@@ -127,7 +128,8 @@ public class Enfermero : MonoBehaviour
  
     private void ExaminarPaciente()
     {
-        
+
+        personaje.Hablando(true);
         currentPaciente = asientoPaciente.actual.gameObject.GetComponent<Paciente>();
         Enfermedad current = currentPaciente.enfermedad;
         if (currentPaciente.tieneBote)
@@ -166,6 +168,8 @@ public class Enfermero : MonoBehaviour
     private void DespacharPaciente()
     {
 
+        personaje.Hablando(false);
+      
         currentAnalisis = Analisis.NULO;
        
         if (currentPaciente != null)
@@ -192,7 +196,9 @@ public class Enfermero : MonoBehaviour
                 case Paso.Casa:
                     currentPaciente.soyLeve.Fire();
                     break;
-                    
+                case Paso.UCI:
+                    currentPaciente.soyGrave.Fire();
+                    break;
                 default:
                     Debug.Log("Que cona fas aqui");
                     break;

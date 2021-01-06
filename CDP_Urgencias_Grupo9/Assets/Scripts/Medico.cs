@@ -136,7 +136,7 @@ public class Medico : MonoBehaviour
 
     private void examinandoPacienteAction()
     {
-
+        personaje.Hablando(true);
         //Coger referencia paciente
         if (targetPaciente.actual != null)
         {
@@ -172,12 +172,17 @@ public class Medico : MonoBehaviour
     {
         //Debug.Log(myFSM.GetCurrentState().Name);
         //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
+        personaje.Hablando(false);
         if (paciente != null)
         {
 
             if (paciente.pasoActual == Paso.Casa)
             {
                 paciente.soyLeve.Fire();
+            }
+            else if (paciente.pasoActual == Paso.UCI)
+            {
+                paciente.soyGrave.Fire();
             }
             else
             {

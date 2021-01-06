@@ -31,11 +31,14 @@ public class Paciente : MonoBehaviour
     //referencias
     public Image emoticono;
     public Sprite emoMuerto;
+    public Sprite emoCurado;
+    public Sprite emoUCI;
     public Personaje personaje;
     public Enfermedad enfermedad;
     public bool tieneBote;
     public bool urgente;
     public bool estoyVivo = true;
+    public bool estoySiendoAtendidoFlag = false;
     public TargetUrgencias targetUrgencias;
     public int targetUrgenciasID;
     public int timerOrina = 5;
@@ -116,6 +119,8 @@ public class Paciente : MonoBehaviour
     public Perception todaviaTengoQueSerTratado;
     public Perception tengoQueHacerAnalisisOrina;
     public Perception soyLeve;
+    public Perception soyGrave;
+
     void Start()
     {
         //Referencias
@@ -142,21 +147,21 @@ public class Paciente : MonoBehaviour
         llegadaCentro = myFSMVivo.CreateState("llegadaCentro");
         entrandoCentro = myFSMVivo.CreateState("entrandoCentro", entrandoCentroAction);
         entrandoCentroUrgente = myFSMVivo.CreateState("entrandoCentroUrgente", entrandoCentroAction);
-        siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano", ()=>targetUrgencias.ocupado = true);
-        siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta");//,()=> Debug.Log("SIENDO ATENDIDO"));
+        siendoAtendidoQuirofano = myFSMVivo.CreateState("siendoAtendidoQuirofano", ()=> { targetUrgencias.ocupado = true; estoySiendoAtendidoFlag = true; });
+        siendoAtendidoConsulta = myFSMVivo.CreateState("siendoAtendidoConsulta",() => estoySiendoAtendidoFlag = true);//,()=> Debug.Log("SIENDO ATENDIDO"));
         yendoSala = myFSMVivo.CreateState("yendoSala",()=> { personaje.levantarse(); GoTo(targetUrgencias); });
-        yendoUCI = myFSMVivo.CreateState("yendoUCI",()=> GoTo(mundo.casa));
-        yendoCasa = myFSMVivo.CreateState("yendoCasa", () => GoTo(mundo.casaPaciente));
+        yendoUCI = myFSMVivo.CreateState("yendoUCI",()=> { GoTo(mundo.casa); mundo.nUCI++;mundo.nUCIText.text = mundo.nUCI.ToString(); emoticono.sprite = emoUCI; });
+        yendoCasa = myFSMVivo.CreateState("yendoCasa", () => { emoticono.sprite = emoCurado; mundo.nRecuperados++; mundo.nRecuperadosText.text = mundo.nRecuperados.ToString(); GoTo(mundo.casaPaciente); }); 
 
 
         //No urgentes
-        siendoAtendidoCeladorMostrador = myFSMVivo.CreateState("siendoAtendidoCeladorMostrador");
+        siendoAtendidoCeladorMostrador = myFSMVivo.CreateState("siendoAtendidoCeladorMostrador",() => estoySiendoAtendidoFlag = true);
         yendoSalaEspera = myFSM.CreateState("yendoSalaEspera");
 
         //Urgentes
         acudirCeladorSala = myFSMVivo.CreateState("acudirCeladorSala");
-        siendoAtendidoCelador = myFSMVivo.CreateState("siendoAtendidoCelador");
-        esperandoSalaUrgente = myFSMVivo.CreateState("esperandoSalaUrgente");
+        siendoAtendidoCelador = myFSMVivo.CreateState("siendoAtendidoCelador",() => estoySiendoAtendidoFlag = true);
+        esperandoSalaUrgente = myFSMVivo.CreateState("esperandoSalaUrgente",() => estoySiendoAtendidoFlag = false);
         
         //Cola fuera
         esperandoCola = myFSMColaFuera.CreateEntryState("esperandoCola");
@@ -191,13 +196,15 @@ public class Paciente : MonoBehaviour
         SalaAsignadaLibre = myFSMVivo.CreatePerception<PushPerception>(); 
         Perception heLlegadoSala = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado); 
         //El cirujano lo manda a la UCI
-        Perception soyGrave = myFSMVivo.CreatePerception<PushPerception>(); 
+         soyGrave = myFSMVivo.CreatePerception<PushPerception>(); 
         //El cirujano lo manda a la casa
         soyLeve = myFSMVivo.CreatePerception<PushPerception>(); 
         //Si ha llegado a casa o a la uci
         Perception heLlegado = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado);
         //Si he muerto, timer de la enfermedad
-        Perception heMuerto = myFSM.CreatePerception<TimerPerception>(enfermedad.timerEnfermedad);
+        Perception seMeAcaboElTiempo = myFSM.CreatePerception<TimerPerception>(enfermedad.timerEnfermedad);
+        Perception estoySiendoAtendio = myFSM.CreatePerception<ValuePerception>(()=>!estoySiendoAtendidoFlag);
+        Perception heMuerto = myFSM.CreateAndPerception<AndPerception>(seMeAcaboElTiempo, estoySiendoAtendio);
 
         Perception noSoyUrgente = myFSMVivo.CreatePerception<ValuePerception>(() => enfermedad!=null&&!enfermedad.urgente);
         Perception hayHueco = myFSMColaFuera.CreatePerception<ValuePerception>(() =>  targetUrgenciasID != 0 && mundo.targetColaFuera[targetUrgenciasID-1].libre );
@@ -226,9 +233,9 @@ public class Paciente : MonoBehaviour
         Perception heTomadoMuestra = myFSMAnalisisOrina.CreatePerception<TimerPerception>(timerOrina);
         Perception hellegadoSitio = myFSMAnalisisOrina.CreatePerception<ValuePerception>(() => personaje.haLlegado);
 
-        //El profesional hace push para que vuelvas a sala de espera
-         todaviaTengoQueSerTratado = myFSMVivo.CreatePerception<PushPerception>();
+        todaviaTengoQueSerTratado = myFSMVivo.CreatePerception<PushPerception>();
         Perception animacionMuerto = myFSM.CreatePerception<TimerPerception>(timerAnimacionMorir);
+        //El profesional hace push para que vuelvas a sala de espera
         esperandoSalaEspera = myFSMVivo.CreateSubStateMachine("esperandoSalaEspera", myFSMEsperandoSala,esperandoDePie);
         vivo = myFSM.CreateSubStateMachine("vivo", myFSMVivo, yendoCentro);
         haciendoAnalisisOrina = myFSMVivo.CreateSubStateMachine("haciendoAnalisisOrina", myFSMAnalisisOrina,yendoBaño);
@@ -250,10 +257,12 @@ public class Paciente : MonoBehaviour
         myFSMVivo.CreateTransition("he llegado centro y no soy urgente", yendoCentro, noSoyUrgente, haciendoColaFuera);
         
         myFSMVivo.CreateTransition("acudiendo celador", entrandoCentroUrgente, celadorLibreSala, acudirCeladorSala);    
-        myFSMVivo.CreateTransition("ser atendido celador", acudirCeladorSala, heLlegado, siendoAtendidoCelador);    
-        myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido, urgente? esperandoSalaUrgente: esperandoSalaEspera);    
-        myFSMVivo.CreateTransition("acudir quirofano", esperandoSalaUrgente, SalaAsignadaLibre, yendoSala);    
-        myFSMVivo.CreateTransition("llegado quirofano", yendoSala, heLlegadoSala, urgente? siendoAtendidoQuirofano: siendoAtendidoConsulta);    
+        myFSMVivo.CreateTransition("ser atendido celador", acudirCeladorSala, heLlegado, siendoAtendidoCelador);
+        //myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido, urgente? esperandoSalaUrgente: esperandoSalaEspera);  
+        myFSMVivo.CreateTransition("esperar sala libre", siendoAtendidoCelador, heSidoAtendido,  esperandoSalaEspera);
+        // myFSMVivo.CreateTransition("acudir quirofano", esperandoSalaUrgente, SalaAsignadaLibre, yendoSala);    
+       // myFSMVivo.CreateTransition("acudir quirofano", esperandoSalaUrgente, QuirofanoLibre, yendoSala);
+        myFSMVivo.CreateTransition("llegado quirofano", yendoSala, heLlegadoSala, urgente&&enfermedad.tipoEnfermedad!=TipoEnfermedad.Covid? siendoAtendidoQuirofano: siendoAtendidoConsulta);    
         myFSMVivo.CreateTransition("acudir a la UCI", siendoAtendidoQuirofano, soyGrave, yendoUCI);    
         myFSMVivo.CreateTransition("acudir a casa", siendoAtendidoQuirofano, soyLeve, yendoCasa);    
         myFSMVivo.CreateTransition("he llegado a UCI", yendoUCI, heLlegado, casaFin);  
@@ -359,6 +368,7 @@ public class Paciente : MonoBehaviour
         {
             if (personaje.haLlegado)
             {
+                
                 personaje.sentarse();
             }
         }
@@ -372,16 +382,22 @@ public class Paciente : MonoBehaviour
     private void muertoAction()
     {
         emoticono.sprite = emoMuerto;
+        mundo.EliminarListaEspera(this);
         if (targetUrgencias != null)
         {
             targetUrgencias.libre = true;
             targetUrgencias.ocupado = true;
         }
-        personaje.myAgent.Stop();
+        if(personaje.myAgent.enabled)
+            personaje.myAgent.Stop();
+
         personaje.muerto = true;
         personaje.myAgent.enabled = false;
         myFSMVivo.Fire(myFSMVivo.CreateExitTransition("salir vivo", myFSMVivo.GetCurrentState(), myFSMVivo.CreatePerception<ValuePerception>(() => morirse == true), muerto));
     }
+
+
+
     public void setEnfermedad(Enfermedad en, Sprite emo)
     {
         emoticono.sprite = emo;
@@ -475,6 +491,7 @@ public class Paciente : MonoBehaviour
     }
     private void ocupandoDePieAction()
     {
+        estoySiendoAtendidoFlag = false;
         for (int i = 0; i < mundo.dePie.Length; i++)
         {
             if (mundo.dePie[i].libre)
