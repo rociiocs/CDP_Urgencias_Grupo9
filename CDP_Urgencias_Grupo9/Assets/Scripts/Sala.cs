@@ -12,18 +12,18 @@ public enum TipoSala
 }
 public class Sala
 {
+    //Variables
     public TipoSala tipo;
     public int ID;
     public float porcentajeSuciedad;
     public bool libre;
     public bool sucio;
     public bool heLlamadoAlMundo;
+    //Referencias
     public TargetUrgencias posicionPaciente;
     public TargetUrgencias posicionProfesional;
     public TargetUrgencias posicionLimpiador;
-    //private float limiteSuciedad = 100;
-    //private float umbral = 65;
-    // private float speedSuciedad= 0.01;
+
 
     public Sala(TipoSala tipo, int ID)
     {

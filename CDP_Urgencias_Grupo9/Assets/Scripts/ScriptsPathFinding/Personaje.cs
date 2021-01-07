@@ -5,18 +5,20 @@ using UnityEngine.AI;
 
 public class Personaje: MonoBehaviour
 {
-    public string nombre;// para el dropdown de la camara
-    public NavMeshAgent myAgent;
-    public bool muerto = false;
+    //Referencias
     Animator animator;
-    bool andando = false;
-    public bool haLlegado = false;
-    float epsilon = 0.1f;
+    public NavMeshAgent myAgent;
     Transform target;
     TargetUrgencias targetU;
 
-    //Auxiliar camillas y sillas
-    Vector3 posicionAnterior;
+    //Variables
+    public string nombre;// para el dropdown de la camara
+    public bool muerto = false;
+    bool andando = false;
+    public bool haLlegado = false;
+    float epsilon = 0.1f;
+    Vector3 posicionAnterior;//Auxiliar camillas y sillas
+   
     void Awake()
     {
         animator = GetComponentInChildren<Animator>();
@@ -32,7 +34,7 @@ public class Personaje: MonoBehaviour
         if (targetU != null)
         {
             targetU.libre = true;
-            targetU.ocupado = true;//?????? quizas hay que cambiarlo
+            targetU.ocupable = true;
         }
         targetU = targetUrgencias;
         if (targetU == null)
@@ -45,10 +47,10 @@ public class Personaje: MonoBehaviour
         haLlegado = false;
         myAgent.Resume();
         myAgent.SetDestination(target.position);
+
         if(!animator.GetBool("Bote"))
             animator.SetBool("Walking", true);
 
-        //andando = true;
         this.target = target;
         StartCoroutine(tiempoEspera());
     }
@@ -65,7 +67,7 @@ public class Personaje: MonoBehaviour
                 {
                     DetenerPersonaje();
                     transform.rotation = target.rotation;
-                    targetU.ocupado = false;
+                    targetU.ocupable = false;
                 }
             }
             
@@ -101,7 +103,7 @@ public class Personaje: MonoBehaviour
         posicionAnterior = transform.position;
         transform.position = targetU.transform.position;
         animator.SetBool("Sitting", true);
-        //this.transform.position = this.transform.position - (this.transform.forward * -0.5f);
+ 
     }
     public void levantarse()
     {

@@ -6,23 +6,21 @@ using UnityEngine.UI;
 public class Cirujano : MonoBehaviour
 {
     //Variables
-    public int timeJornada = 2000;
-    int timeOperar = 5;
+    public int timeJornada = 60;
+    int timeOperar = 7;
     int timeExaminar = 3;
 
+    //Referencias
     Personaje personaje;
     TargetUrgencias targetUrgencias;
     TargetUrgencias targetPaciente;
     List<Sala> quirofanos;
-
     public Image emoticono;
     public Sprite emoOperacion,emoExaminar,emoCasa,emoSucio,emoEsperarPaciente;
-    //public bool ponerQuirofanoSucio = false;
-
     Sala sala;
     Paciente paciente;
-    Enfermedad enfermedad;
     Mundo mundo;
+
     //Maquina de estados
     StateMachineEngine myFSM;
 
@@ -48,16 +46,17 @@ public class Cirujano : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); sala.libre = true;}); //Debug.Log(myFSM.GetCurrentState().Name);
+        esperarPaciente = myFSM.CreateState("esperarPaciente", EsperarPacienteAction); 
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
-        esperarLimpiador = myFSM.CreateState("esperarLimpiador", ()=> PutEmoji(emoSucio));
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarCirujano(personaje.nombre); Destroy(this.gameObject); });
+        esperarLimpiador = myFSM.CreateState("esperarLimpiador", EsperarLimpiadorAction);
+        casaFin = myFSM.CreateState("casaFin",CasaFinAction);
 
+       
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupable);
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si termina el tiempo de operar
@@ -88,7 +87,6 @@ public class Cirujano : MonoBehaviour
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         myFSM.Update();
@@ -109,26 +107,31 @@ public class Cirujano : MonoBehaviour
                 }
             }
         }
-        /*
-        if (ponerQuirofanoSucio)
-        {
-            ponerQuirofanoSucio = false;
-            mundo.SalaCirugiaSucia(sala);
-        }
-        */
-        //Debug.Log(myFSM.GetCurrentState().Name);
     }
 
     private void PutEmoji(Sprite emoji)
     {
         emoticono.sprite = emoji;
     }
-
+    private void EsperarPacienteAction()
+    {
+        PutEmoji(emoEsperarPaciente);
+        sala.libre = true;
+    }
+    private void EsperarLimpiadorAction()
+    {
+        PutEmoji(emoSucio);
+    }
+    private void CasaFinAction()
+    {
+        FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);
+        mundo.ReemplazarCirujano(personaje.nombre);
+        Destroy(this.gameObject);
+    }
     private void irPuestoTrabajoAction()
     {
         //Nav Mesh ir al target puesto
         targetUrgencias.libre = false;
-        //sala.libre = false;
         personaje.GoTo(targetUrgencias);
     }
 
@@ -145,11 +148,9 @@ public class Cirujano : MonoBehaviour
     private void examinandoPacienteAction()
     {
         personaje.Hablando(true);
-        //Debug.Log(myFSM.GetCurrentState().Name);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
         paciente.reiniciarTimerMorir();
         //Coger referencia paciente
-        enfermedad = paciente.enfermedad;
         //Do animacion examinar
         PutEmoji(emoExaminar);
     }
@@ -164,7 +165,7 @@ public class Cirujano : MonoBehaviour
     private void llamarLimpiadorAction()
     {
         personaje.Hablando(false);
-        targetPaciente.ocupado = true;
+        targetPaciente.ocupable = true;
         paciente.levantarseOperacion();
         mundo.SalaCirugiaSucia(sala);
         myFSM.Fire("llamado limpiador");

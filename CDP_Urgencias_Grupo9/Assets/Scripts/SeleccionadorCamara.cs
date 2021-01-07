@@ -6,17 +6,21 @@ using UnityEngine.SceneManagement;
 
 public class SeleccionadorCamara : MonoBehaviour
 {
-    // Start is called before the first frame update
+
+    //Referencias
     public Dropdown seleccionador;
-    bool general = true;
     List<Personaje> personajes;
+    Camera main;
+    Personaje current;
+    //Variables
     public Vector3 offset = new Vector3(0,2f, -3.62f);
-    Vector3 offsetPrimera = new Vector3(0, 2.01f, 0.414f);
     Vector3 offsetCentro = new Vector3(0, 1, 0);
     Vector3 posGeneral;
     Quaternion rotationGeneral;
-    Camera main;
-    Personaje current;
+    public bool general =false;
+    float speed = 1f;
+    float speedCamera = 0.02f;
+    float yaw= 0.0f, pitch = 0.0f;
     void Start()
     {
         main = Camera.main;
@@ -27,6 +31,59 @@ public class SeleccionadorCamara : MonoBehaviour
         UpdateDropdown();
     }
 
+    private void Update()
+    {
+        if (general)
+        {
+            float x = Input.GetAxisRaw("Horizontal");
+            float y = Input.GetAxisRaw("Vertical");
+            yaw += speed * Input.GetAxis("Mouse X");
+            pitch += speed * Input.GetAxis("Mouse Y");
+            main.transform.eulerAngles = new Vector3(-pitch, yaw, 0.0f);
+            
+            
+            main.transform.position += x*speedCamera*main.transform.right;
+            main.transform.position += y*speedCamera*main.transform.forward;
+            if (main.transform.position.x < -28)
+            {
+
+                main.transform.position = new Vector3(-28, main.transform.position.y, main.transform.position.z);
+            }
+            else if (main.transform.position.x >6)
+            {
+
+
+                main.transform.position = new Vector3(6, main.transform.position.y, main.transform.position.z);
+            }
+            if (main.transform.position.z < -23)
+            {
+                
+                    main.transform.position = new Vector3(main.transform.position.x, main.transform.position.y, -23);
+
+
+            }
+            else if (main.transform.position.z > -1)
+            {
+                main.transform.position = new Vector3(main.transform.position.x, main.transform.position.y,-1);
+            }
+
+
+            if (main.transform.position.y > 17)
+            {
+               
+                
+                    main.transform.position = new Vector3(main.transform.position.x, 17, main.transform.position.z);
+                
+
+            }
+            else if(main.transform.position.y < 0)
+            {
+                main.transform.position = new Vector3(main.transform.position.x, 0, main.transform.position.z);
+            }
+
+        }
+        
+    }
 
     void UpdateDropdown()
     {
@@ -56,40 +113,12 @@ public class SeleccionadorCamara : MonoBehaviour
             Transform padre = personajes[value-1].transform;
             main.transform.parent = padre;
             current = personajes[value - 1];
-            //primera persona
-            //
-
-            //main.transform.position = padre.TransformPoint(offsetPrimera);
-            //main.transform.LookAt(padre.TransformPoint(new Vector3(0, 2.01f, 3)));
-            //main.transform.LookAt(padre.forward);
-
-            //
-            //primerapersona
-
-            //tercerapersona
-            //
-
             main.transform.position = padre.TransformPoint(offset);
             main.transform.LookAt(padre.TransformPoint(offsetCentro));
 
-            //
-            //tercerapersona
-
         }
     }
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        //tercera persona
-        //
 
-       /* if (!general)
-            main.transform.RotateAround(main.transform.parent.TransformPoint(offsetCentro), new Vector3(0, 1, 0), 11.5f * Time.deltaTime);
-            */
-
-        //tercera persona
-
-    }
     public void AnhadirProfesional( Personaje p)
     {
         personajes.Add(p);

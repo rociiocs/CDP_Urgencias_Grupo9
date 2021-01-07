@@ -260,7 +260,6 @@ GameObject:
   - component: {fileID: 4025538832688054848}
   - component: {fileID: 683315967321761250}
   - component: {fileID: 1310029756589535551}
-  - component: {fileID: 1049888491331062887}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -348,18 +347,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &1049888491331062887
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1846521143014922744}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77b6f6a3ce65f7d47ad671b353d462fc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1853065022316927501
 GameObject:
   m_ObjectHideFlags: 0
@@ -1018,7 +1005,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3
+  m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -1042,8 +1029,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0a8c07e3af70ae4dba23c5aebb62ad5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nombre: Medico
   myAgent: {fileID: 0}
+  nombre: Medico
   muerto: 0
   haLlegado: 0
 --- !u!1 &5972507223284021253

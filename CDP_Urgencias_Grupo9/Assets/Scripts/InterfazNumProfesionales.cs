@@ -22,6 +22,7 @@ public class InterfazNumProfesionales : MonoBehaviour
      void ComienzaSimulacion()
     {
         seleccionador.SetActive(true);
+        seleccionador.GetComponentInParent<SeleccionadorCamara>().general = true;
         mundo.numCeladores = numCeladores.value + minCeladores;
         mundo.numCirujanos = numCirujano.value + minCirujano;
         mundo.numEnfermeros = numEnfermeros.value + minEnfermeros;

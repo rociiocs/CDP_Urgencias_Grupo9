@@ -13,19 +13,9 @@ public enum Analisis
     SANGRE
 }
 
-//Meter en la memoria los estados de suero y lo que falte
-//Ademas el estado examinar, que aunque sea rápido, se necesita
-
-//quizas hay que cambiar el analisis de orina y hacer un estado más: esperando orina
-//revisar
-//null despues de enviar a baño
 public class Enfermero : MonoBehaviour
 {
-    //info
-    StateMachineEngine myFSM;
-    float timeJornada = 2000, timeAnimacionAtender = 3;
-    public bool llevarLabFlag = false, jornadaFlag = false;
-    Analisis currentAnalisis;
+  
     //Referencias
     public TargetUrgencias puestoTrabajo;
     public TargetUrgencias asientoPaciente;
@@ -37,6 +27,11 @@ public class Enfermero : MonoBehaviour
     Personaje personaje;
     Sala sala;
 
+    //Variables
+    StateMachineEngine myFSM;
+    float timeJornada = 60, timeAnimacionAtender = 5;
+    public bool llevarLabFlag = false, jornadaFlag = false;
+    Analisis currentAnalisis;
 
     void Start()
     {
@@ -48,24 +43,23 @@ public class Enfermero : MonoBehaviour
     {
 
         myFSM = new StateMachineEngine();
-        State casaFin = myFSM.CreateState("casafin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarEnfermero(banhoTarget, personaje.nombre); Destroy(gameObject); });
+        State casaFin = myFSM.CreateState("casafin", CasaFinAction);
         State enCasa = myFSM.CreateEntryState("casa");
-        State yendoPuesto = myFSM.CreateState("irPuestoTrabajo", () => { personaje.GoTo(puestoTrabajo); jornadaFlag = false; });
-        State yendoCasa = myFSM.CreateState("irCasa", () => { PutEmoji(emoCasa); personaje.GoTo(mundo.casa); });
-        State esperando = myFSM.CreateState("esperarPaciente", () => { personaje.Hablando(false);personaje.LlevandoBote(false); PutEmoji(emoEsperando); sala.libre = true; DespacharPaciente(); });// idle
-        State analisisSangre = myFSM.CreateState("analisisSangre", () => { Atender(emoSangre); });//animacion y emoticonillo
-        State analisisOrina = myFSM.CreateState("analisisOrina", () => Atender(emoOrina));//animacion y emoticonillo
-        State analisisPCR = myFSM.CreateState("analisisPCR", () => Atender(emoPCR)); //animacion y emoticonillo
-        State suero = myFSM.CreateState("meterSuero", () => Atender(emoSuero));//animacion y emoticonillo;
-        State laboratorio = myFSM.CreateState("llevarLab", () => { DespacharPaciente(); personaje.LlevandoBote(true); PutEmoji(emoLAB); personaje.GoTo(mundo.laboratorio); puestoTrabajo.libre = false; });
-        State darBote = myFSM.CreateState("darBote", () => DarBoteAction());//Darle al paciente  animacion y emoticono
-        State examinarPaciente = myFSM.CreateState("examinar", () => ExaminarPaciente());//es un  micromomento
-        State esperandoPacienteBanho = myFSM.CreateState("esperarBanho", () => PacienteABaño());
+        State yendoPuesto = myFSM.CreateState("irPuestoTrabajo", IrPuestoAction);
+        State yendoCasa = myFSM.CreateState("irCasa", IrCasaAction);
+        State esperando = myFSM.CreateState("esperarPaciente",EsperarPacienteAction);// idle
+        State analisisSangre = myFSM.CreateState("analisisSangre", SangreAction);//animacion y emoticonillo
+        State analisisOrina = myFSM.CreateState("analisisOrina", OrinaAction);//animacion y emoticonillo
+        State analisisPCR = myFSM.CreateState("analisisPCR", PCRAction ); //animacion y emoticonillo
+        State suero = myFSM.CreateState("meterSuero", SueroAction);//animacion y emoticonillo;
+        State laboratorio = myFSM.CreateState("llevarLab", LlevarLabAction);
+        State darBote = myFSM.CreateState("darBote", DarBoteAction);//Darle al paciente  animacion y emoticono
+        State examinarPaciente = myFSM.CreateState("examinar", ExaminarPacienteAction);//es un  micromomento
+        State esperandoPacienteBanho = myFSM.CreateState("esperarBanho",  PacienteABañoAction);
 
      
 
-
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !asientoPaciente.ocupado); //Mirar
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !asientoPaciente.ocupable); //Mirar
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         Perception hayAnalisisSangre = myFSM.CreatePerception<ValuePerception>(() => currentAnalisis.Equals(Analisis.SANGRE));
         Perception hayAnalisisPCR = myFSM.CreatePerception<ValuePerception>(() => currentAnalisis.Equals(Analisis.PCR));
@@ -82,38 +76,33 @@ public class Enfermero : MonoBehaviour
         myFSM.CreateTransition("comienza jornada", enCasa, comienzaJornada, yendoPuesto);
         myFSM.CreateTransition("llegado a puesto", yendoPuesto, llegadoPuesto, esperando);
         myFSM.CreateTransition("hay Paciente", esperando, pacienteAtender, examinarPaciente);
-
         myFSM.CreateTransition("hay que hacer analisis sangre", examinarPaciente, hayAnalisisSangre, analisisSangre);
         myFSM.CreateTransition("hay que hacer analisis PCR", examinarPaciente, hayAnalisisPCR, analisisPCR);
         myFSM.CreateTransition("hay que hacer analisis orina", examinarPaciente, hayAnalisisOrina, analisisOrina);
         myFSM.CreateTransition("hay que meter Suero", examinarPaciente, hayMeterSuero, suero);
         myFSM.CreateTransition("hay que dar Bote", examinarPaciente, hayAnalisisDarBote, darBote);
-
         myFSM.CreateTransition("atendido sangre", analisisSangre, atendido, laboratorio);
         myFSM.CreateTransition("atendido PCR", analisisPCR, atendido, laboratorio);
         myFSM.CreateTransition("atendido orina", analisisOrina, atendido, laboratorio);
         myFSM.CreateTransition("atendido suero", suero, atendido, esperando);
         myFSM.CreateTransition("atendido darBote", darBote, atendido, esperandoPacienteBanho);
         myFSM.CreateTransition("ya tengo bote", esperandoPacienteBanho, pacienteAtender, examinarPaciente);
-
-        myFSM.CreateTransition("enviado lab", laboratorio, llegadoPuesto, yendoPuesto);// nueva transicion
-
+        myFSM.CreateTransition("enviado lab", laboratorio, llegadoPuesto, yendoPuesto);
         myFSM.CreateTransition("a casa", esperando, terminadaJornada, yendoCasa);
-        myFSM.CreateTransition("en casa", yendoCasa, llegadoPuesto, casaFin);// nueva transicion
+        myFSM.CreateTransition("en casa", yendoCasa, llegadoPuesto, casaFin);
 
 
     }
     private void Atender(Sprite emoji)
     {
         PutEmoji(emoji);
-       
-        // animacion 
+
     }
     private void PutEmoji(Sprite emoji)
     {
         emoticono.sprite = emoji;
     }
-    private void PacienteABaño()
+    private void PacienteABañoAction()
     {
         personaje.Hablando(false);
         PutEmoji(emoEsperandoOrina);
@@ -125,8 +114,64 @@ public class Enfermero : MonoBehaviour
         Atender(emoBote); 
        
     }
- 
-    private void ExaminarPaciente()
+
+
+    private void CasaFinAction()
+    {
+        FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);
+        mundo.ReemplazarEnfermero(banhoTarget, personaje.nombre);
+        Destroy(gameObject);
+    }
+    private void IrPuestoAction()
+    {
+        personaje.GoTo(puestoTrabajo);
+        jornadaFlag = false;
+
+    }
+    private void IrCasaAction()
+    {
+        PutEmoji(emoCasa); 
+        puestoTrabajo.libre = true;
+        sala.libre = false;
+        personaje.GoTo(mundo.casa);
+       
+    }
+    private void EsperarPacienteAction()
+    {
+        personaje.Hablando(false);
+        personaje.LlevandoBote(false);
+        PutEmoji(emoEsperando);
+        sala.libre = true;
+        DespacharPaciente();
+
+    }
+    private void SangreAction()
+    {
+        Atender(emoSangre);
+    }
+    private void PCRAction()
+    {
+        Atender(emoPCR);
+    }
+    private void OrinaAction()
+    {
+
+        Atender(emoOrina);
+    }
+    private void SueroAction()
+    {
+        Atender(emoSuero);
+    }
+    private void LlevarLabAction()
+    {
+        DespacharPaciente();
+        personaje.LlevandoBote(true);
+        PutEmoji(emoLAB);
+        personaje.GoTo(mundo.laboratorio);
+        puestoTrabajo.libre = false;
+    }
+
+    private void ExaminarPacienteAction()
     {
         personaje.Hablando(true);
         currentPaciente = asientoPaciente.actual.gameObject.GetComponent<Paciente>();
@@ -173,8 +218,7 @@ public class Enfermero : MonoBehaviour
         currentAnalisis = Analisis.NULO;
        
         if (currentPaciente != null)
-        {  //  currentPaciente.Despachar();
-           //meterle en la lista segun el paso en el que esté o al baño incluso! mirar
+        {  
             currentPaciente.siguientePaso();
             switch (currentPaciente.pasoActual)
             {
@@ -200,13 +244,13 @@ public class Enfermero : MonoBehaviour
                     currentPaciente.soyGrave.Fire();
                     break;
                 default:
-                    Debug.Log("Que cona fas aqui");
+          
                     break;
                  
             }
            
             currentPaciente = null;
-            asientoPaciente.ocupado = true;
+            asientoPaciente.ocupable = true;
 
         }
 
@@ -220,7 +264,7 @@ public class Enfermero : MonoBehaviour
         {
             List<Sala> enfermeria = mundo.salas.FindAll((s) => s.tipo.Equals(TipoSala.ENFERMERIA));
             //Si el puesto de trabajo está libre
-            for (int i = 0; i < mundo.numEnfermeros; i++)// MAS QUE COUNT, NUMERO DE ENFERMERIAS
+            for (int i = 0; i < mundo.numEnfermeros; i++)
             {
                 if (enfermeria[i].posicionProfesional.libre)
                 {
@@ -229,28 +273,14 @@ public class Enfermero : MonoBehaviour
                     
                     puestoTrabajo = enfermeria[i].posicionProfesional;
                     asientoPaciente = enfermeria[i].posicionPaciente;
-                    asientoPaciente.ocupado = true;
+                    if(asientoPaciente.ocupable==null)
+                        asientoPaciente.ocupable = true;
                     jornadaFlag = true;
                     enfermeria[i].posicionProfesional.libre = false;
                     return;
                 }
             }
         }
-        //else if (myFSM.GetCurrentState().Name.Equals("irPuestoTrabajo"))
-        //{
-        //    personaje.GoTo(puestoTrabajo);
-        //}
-        //else if (myFSM.GetCurrentState().Name.Equals("llevarLab"))
-        //{
-        //    personaje.GoTo(mundo.laboratorio);
-        //}
-        //else if (myFSM.GetCurrentState().Name.Equals("irCasa"))
-        //{
-        //    personaje.GoTo(mundo.casa);
-        //}
-     
-
-
-
+      
     }
 }

@@ -11,15 +11,5 @@ public class SalaEspera : Sala
     public SalaEspera(TipoSala tipo, int ID) : base(tipo, ID){}
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

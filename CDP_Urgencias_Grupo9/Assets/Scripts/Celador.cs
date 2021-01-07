@@ -7,25 +7,21 @@ using UnityEngine.UI;
 public class Celador : MonoBehaviour
 {
     //Variables
-    public int timeJornada = 1000;
-    int timeAtender = 2;
-    public int timeTurno = 10;
-    int idMostrador;
-    int idSala;
+    public int timeJornada = 52;
+    int timeAtender = 5;
+    public int timeTurno =20;
     public bool turnoSala;
-   
+
+    //Referencias
     Personaje personaje;
     TargetUrgencias targetUrgenciasMostrador;
     TargetUrgencias targetUrgenciasSala;
     TargetUrgencias targetPaciente;
     TargetUrgencias targetPacienteSala;
     SalaEspera sala;
-
     public Image emoticono;
     public Sprite emoAtender, emoCasa, emoEsperarPaciente, emoCambio;
-
     Paciente paciente;
-    Enfermedad enfermedad;
     Mundo mundo;
     //Maquina de estados
     StateMachineEngine myFSM;
@@ -47,18 +43,14 @@ public class Celador : MonoBehaviour
     State paseandoSala;
     State casaFin;
 
-
-    //PRUEBAS DE CELTIA NI CASO
-    //public TargetUrgencias mostradorCel;
-    //PRUEBAS DE CELTIA NI CASO
-
-     Perception cambioTurnoM;
+    // Variables para el cambio de turno
+    Perception cambioTurnoM;
     Celador siguiente;
     bool heSidoLlamadoTurno = false;
     Perception compañeroLibre;
     Perception timercambioTurnoS;
     Perception cambioTurnoS;
-    // Start is called before the first frame update
+
     void Start()
     {
         myFSM = new StateMachineEngine();
@@ -76,31 +68,27 @@ public class Celador : MonoBehaviour
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
         esperarPaciente = myFSMMostrador.CreateEntryState("esperarPaciente", esperandoPacienteActionMostrador);
         atendiendoPaciente = myFSMMostrador.CreateState("atendiendoPaciente", atendiendoPacienteAction);
-        esperandoCompañeroM = myFSM.CreateState("esperandoCompañeroM",esperandoCompañeroMAction);
-        esperandoCompañeroS = myFSM.CreateState("esperandoCompañeroS",esperandoCompañeroSAction);
+        esperandoCompañeroM = myFSM.CreateState("esperandoCompañeroM", esperandoCompañeroMAction);
+        esperandoCompañeroS = myFSM.CreateState("esperandoCompañeroS", esperandoCompañeroSAction);
         atendiendoUrgente = myFSMSala.CreateState("atendiendoUrgente", atendiendoUrgenteAction);
-        paseandoSala = myFSMSala.CreateEntryState("paseandoSala",esperandoPacienteAction);
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje); mundo.ReemplazarCelador(personaje.nombre,this); Destroy(this.gameObject); });
+        paseandoSala = myFSMSala.CreateEntryState("paseandoSala", esperandoPacienteAction);
+        casaFin = myFSM.CreateState("casaFin", CasaFinAction);
         mostrador = myFSM.CreateSubStateMachine("mostrador", myFSMMostrador);
         salaState = myFSM.CreateSubStateMachine("salaState", myFSMSala);
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
-        
-        //Si hay un paciente urgente que atender
-        Perception urgenteAtender = myFSMSala.CreatePerception<ValuePerception>(() => !targetPacienteSala.ocupado);
-        //Si se produce cambio de turno
-        
-        //Perception cambioTurnoM = myFSMMostrador.CreatePerception<TimerPerception>(timeTurno);
-        cambioTurnoM = myFSMMostrador.CreatePerception<ValuePerception>(()=>heSidoLlamadoTurno);
+        Perception pacienteAtender = myFSMMostrador.CreatePerception<ValuePerception>(() => !targetPaciente.ocupable);
 
+        //Si hay un paciente urgente que atender
+        Perception urgenteAtender = myFSMSala.CreatePerception<ValuePerception>(() => !targetPacienteSala.ocupable);
+        //Si se produce cambio de turno
+
+        cambioTurnoM = myFSMMostrador.CreatePerception<ValuePerception>(() => heSidoLlamadoTurno);
         timercambioTurnoS = myFSMSala.CreatePerception<TimerPerception>(timeTurno);
         compañeroLibre = myFSMSala.CreatePerception<ValuePerception>(HayCompanheroLibre);
-        //Perception cambioTurnoS = myFSMSala.CreateAndPerception<AndPerception>(compañeroLibre, timercambioTurnoS);
         cambioTurnoS = myFSMSala.CreatePerception<PushPerception>();
-        //Si hay un puesto libre donde voy a cambiar
+
         Perception huecoLibre = myFSM.CreatePerception<ValuePerception>(() => ComprobarLibre());
-        //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si el puesto de trabajo está libre, ir hacia él
         Perception comienzaJornada = myFSM.CreatePerception<PushPerception>();
@@ -113,27 +101,23 @@ public class Celador : MonoBehaviour
         //Se da la percepción desde el update, comprobando si está en la posición correcta
         Perception llegadaPuesto = myFSM.CreatePerception<ValuePerception>(() => personaje.haLlegado);
 
-     
+
         //Create transitions
-        myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, turnoSala? irPuestoTrabajoS: irPuestoTrabajoM);
+        myFSM.CreateTransition("comienza jornada", casa, comienzaJornada, turnoSala ? irPuestoTrabajoS : irPuestoTrabajoM);
         myFSM.CreateTransition("llegar puesto trabajoM", irPuestoTrabajoM, llegadaPuesto, mostrador);
         myFSM.CreateTransition("llegar puesto trabajoS", irPuestoTrabajoS, llegadaPuesto, salaState);
         myFSMMostrador.CreateTransition("llega paciente", esperarPaciente, pacienteAtender, atendiendoPaciente);
         myFSMSala.CreateTransition("llega urgente", paseandoSala, urgenteAtender, atendiendoUrgente);
         myFSMMostrador.CreateTransition("atencion completada", atendiendoPaciente, terminarAtender, esperarPaciente);
         myFSMSala.CreateTransition("urgente completada", atendiendoUrgente, terminarUrgente, paseandoSala);
-        myFSMSala.CreateExitTransition("cambio de turnoSM", paseandoSala , cambioTurnoS, esperandoCompañeroS);
+        myFSMSala.CreateExitTransition("cambio de turnoSM", paseandoSala, cambioTurnoS, esperandoCompañeroS);
         myFSMMostrador.CreateExitTransition("cambio de turnoMS", esperarPaciente, cambioTurnoM, esperandoCompañeroM);
-
         myFSM.CreateTransition("hueco libreM", esperandoCompañeroS, huecoLibre, irPuestoTrabajoM);
         myFSM.CreateTransition("hueco libreS", esperandoCompañeroM, huecoLibre, irPuestoTrabajoS);
-
         myFSMMostrador.CreateExitTransition("terminada jornada mostrador", esperarPaciente, terminadaJornada, irCasa);
         myFSMSala.CreateExitTransition("terminada jornada sala", paseandoSala, terminadaJornada, irCasa);
         myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casaFin);
 
-
-      //  myFSM.CreateTransition("Cambio de turno fallido", esperandoCompañeroS, turnofallido, salaState);
 
     }
 
@@ -144,11 +128,7 @@ public class Celador : MonoBehaviour
         myFSM.Update();
         myFSMMostrador.Update();
         myFSMSala.Update();
-      
-        if (!turnoSala)
-        {
-            //Debug.Log(myFSMMostrador.GetCurrentState().Name);
-        }
+
         if (myFSM.GetCurrentState().Name.Equals(casa.Name))
         {
             targetUrgenciasSala = sala.posicionSalaProfesional[0];
@@ -158,19 +138,16 @@ public class Celador : MonoBehaviour
             {
                 for (int i = 0; i < sala.posicionMostradorProfesional.Length; i++)
                 {
-                    if (sala.posicionMostradorProfesional[i].libre && sala.posicionMostradorProfesional[i].ocupado)
+                    if (sala.posicionMostradorProfesional[i].libre && sala.posicionMostradorProfesional[i].ocupable)
                     {
                         sala.posicionMostradorProfesional[i].libre = false;
-                        //Debug.Log("hay hueco libre");
-                        //idMostrador = i;
                         targetUrgenciasMostrador = sala.posicionMostradorProfesional[i];
                         targetPaciente = sala.posicionMostradorPaciente[i];
                         if (targetPaciente.actual == null)
                         {
-                            targetPaciente.ocupado = true;
+                            targetPaciente.ocupable = true;
                         }
-                        
-                        //mundo.targetMostradorPaciente[i].libre = true;
+
                         myFSM.Fire("comienza jornada");
                         return;
                     }
@@ -184,14 +161,13 @@ public class Celador : MonoBehaviour
                     if (sala.posicionSalaProfesional[i].libre)
                     {
                         sala.posicionSalaProfesional[i].libre = false;
-                        //idSala = i;
                         targetUrgenciasSala = sala.posicionSalaProfesional[i];
                         targetPacienteSala = sala.posicionSalaPaciente[i];
                         if (targetPacienteSala.actual == null)
                         {
-                            targetPacienteSala.ocupado = true;
+                            targetPacienteSala.ocupable = true;
                         }
-                     
+
                         myFSM.Fire("comienza jornada");
                         return;
                     }
@@ -201,10 +177,8 @@ public class Celador : MonoBehaviour
         }
         else if (myFSMSala.GetCurrentState().Name.Equals("paseandoSala"))
         {
-           // HayCompanheroLibre();
-
-            Debug.Log(compañeroLibre.Check()&&timercambioTurnoS.Check());
-            if(compañeroLibre.Check() && timercambioTurnoS.Check())
+            Debug.Log(compañeroLibre.Check() && timercambioTurnoS.Check());
+            if (compañeroLibre.Check() && timercambioTurnoS.Check())
             {
                 cambioTurnoS.Fire();
             }
@@ -213,6 +187,12 @@ public class Celador : MonoBehaviour
     private void PutEmoji(Sprite emoji)
     {
         emoticono.sprite = emoji;
+    }
+    private void CasaFinAction()
+    {
+        FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);
+        mundo.ReemplazarCelador(personaje.nombre, this);
+        Destroy(this.gameObject);
     }
     private void irPuestoTrabajoAction()
     {
@@ -238,27 +218,23 @@ public class Celador : MonoBehaviour
         personaje.GoTo(mundo.casa);
         PutEmoji(emoCasa);
     }
-    //REVISAR
+
     private void atendiendoPacienteAction()
     {
-        //Debug.Log(myFSMMostrador.GetCurrentState().Name);
         personaje.Hablando(true);
-       // Debug.Log(targetPaciente);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
-        enfermedad = paciente.enfermedad;
+
         PutEmoji(emoAtender);
     }
     private void esperandoPacienteAction()
     {
         personaje.Hablando(false);
-        //Debug.Log(myFSMSala.GetCurrentState().Name);
-        //turnoSala = true;
         if (paciente != null)
         {
             mandarPacienteListaEspera();
             paciente.heSidoAtendido.Fire();
             paciente = null;
-            targetPacienteSala.ocupado = true;
+            targetPacienteSala.ocupable = true;
         }
         PutEmoji(emoEsperarPaciente);
     }
@@ -283,40 +259,37 @@ public class Celador : MonoBehaviour
     {
         personaje.Hablando(false);
         PutEmoji(emoEsperarPaciente);
-        //turnoSala = false;
         if (paciente != null)
         {
 
             mandarPacienteListaEspera();
             paciente.heSidoAtendido.Fire();
             paciente = null;
-            targetPaciente.ocupado = true;
+            targetPaciente.ocupable = true;
         }
     }
     private void atendiendoUrgenteAction()
     {
         personaje.Hablando(true);
-        //Debug.Log(myFSMSala.GetCurrentState().Name);
         paciente = targetPacienteSala.actual.GetComponent<Paciente>();
-        enfermedad = paciente.enfermedad;
+
         PutEmoji(emoAtender);
     }
 
-    //REVISAR, NO ESTÁ ENCONTRANDO LOS HUECOS LIBRES
+
     private bool ComprobarLibre()
     {
-        //Debug.Log("quiero cambiar de turno");
+
         if (!turnoSala)
         {
-            //targetUrgenciasMostrador.libre = true;
-            //targetPaciente.ocupado = false;
+
             if (targetUrgenciasSala.libre)
             {
                 turnoSala = true;
                 targetUrgenciasSala.libre = false;
                 if (targetPacienteSala.actual == null)
                 {
-                     targetPacienteSala.ocupado = true;
+                    targetPacienteSala.ocupable = true;
 
                 }
                 return true;
@@ -325,14 +298,13 @@ public class Celador : MonoBehaviour
         }
         else
         {
-            //targetUrgenciasSala.libre = true;
-            //targetPacienteSala.ocupado = false;
+
             if (targetUrgenciasMostrador.libre)
             {
                 turnoSala = false;
                 if (targetPaciente == null)
                 {
-                    targetPaciente.ocupado = true;
+                    targetPaciente.ocupable = true;
                 }
                 targetUrgenciasMostrador.libre = false;
                 return true;
@@ -346,9 +318,6 @@ public class Celador : MonoBehaviour
         heSidoLlamadoTurno = false;
         emoticono.sprite = emoCambio;
         targetUrgenciasMostrador.libre = true;
-
-        //targetPaciente.ocupado = false;
-
         if (paciente != null)
         {
             mandarPacienteListaEspera();
@@ -364,7 +333,7 @@ public class Celador : MonoBehaviour
         }
         if (compi.myFSMMostrador.GetCurrentState().Name.Equals("esperarPaciente"))
         {
-            
+
             return true;
         }
         if (compi.turnoSala)
@@ -375,8 +344,7 @@ public class Celador : MonoBehaviour
     }
     private void esperandoCompañeroSAction()
     {
-        //targetPacienteSala.ocupado = false;
-        
+
         emoticono.sprite = emoCambio;
         timercambioTurnoS.Reset();
         targetUrgenciasMostrador = siguiente.targetUrgenciasMostrador;
@@ -394,8 +362,8 @@ public class Celador : MonoBehaviour
 
     private bool HayCompanheroLibre()
     {
-        
-       
+
+
         Celador[] otros = Array.FindAll(FindObjectsOfType<Celador>(), (c) => !c.Equals(this));
         Celador siguiente = otros[UnityEngine.Random.Range(0, otros.Length)];
         if (siguiente != null)
@@ -403,13 +371,12 @@ public class Celador : MonoBehaviour
             if (ComprobarCompañero(siguiente))
             {
                 this.siguiente = siguiente;
-                //compañeroLibre.Fire();
                 return true;
-           
+
             }
 
         }
         return false;
-    
+
     }
 }

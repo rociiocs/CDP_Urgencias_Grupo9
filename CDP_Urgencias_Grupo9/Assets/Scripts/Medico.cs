@@ -5,25 +5,24 @@ using UnityEngine.UI;
 
 public class Medico : MonoBehaviour
 {
-   
+
     //Variables
-    public int timeJornada = 2000;
-    int timeExaminar = 2;
+    public int timeJornada = 40;
+    int timeExaminar = 5;
     int timeDespachar = 1;
 
-
+    //Referencias
     Personaje personaje;
     TargetUrgencias targetUrgencias;
     TargetUrgencias targetPaciente;
     List<Sala> oficinas;
-
     public Image emoticono;
     public Sprite emoExaminar, emoCasa, emoEsperarPaciente;
-
     Sala sala;
     Paciente paciente;
     Enfermedad enfermedad;
     Mundo mundo;
+
     //Maquina de estados
     StateMachineEngine myFSM;
 
@@ -47,17 +46,15 @@ public class Medico : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => {PutEmoji(emoEsperarPaciente); sala.libre = true; });
+        esperarPaciente = myFSM.CreateState("esperarPaciente", EsperarPacienteAction);
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
-        //despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
         despacharPaciente = myFSM.CreateState("despacharPaciente", despachandoPacienteAction);
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarMedico(personaje.nombre); Destroy(this.gameObject); });
+        casaFin = myFSM.CreateState("casaFin", CasaFinAction);
 
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
-       // Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.actual!=null);
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupable);
         //Si hay un paciente delante
         Perception terminarDespachar = myFSM.CreatePerception<TimerPerception>(timeDespachar);//puede que sea value si se usa animación
         //Si termina el tiempo de la jornada
@@ -82,14 +79,12 @@ public class Medico : MonoBehaviour
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         myFSM.Update();
-        //Debug.Log(myFSM.GetCurrentState().Name);
         if (myFSM.GetCurrentState().Name.Equals(casa.Name))
         {
-            //Si el puesto de trabajo está libre
+
             for (int i = 0; i < oficinas.Count; i++)
             {
                 if (oficinas[i].posicionProfesional.libre)
@@ -98,23 +93,31 @@ public class Medico : MonoBehaviour
                     sala = oficinas[i];
                     targetUrgencias = sala.posicionProfesional;
                     targetPaciente = sala.posicionPaciente;
-                    
-                    if(targetPaciente.actual==null)
-                        targetPaciente.ocupado = true;
+
+                    if (targetPaciente.actual == null)
+                        targetPaciente.ocupable = true;
                     myFSM.Fire("comienza jornada");
-                    
+
                     return;
                 }
             }
         }
-        /*if (paciente != null)
-        {
-            Debug.Log(paciente.myFSMVivo.GetCurrentState().Name);
-        }*/
+
     }
     private void PutEmoji(Sprite emoji)
     {
         emoticono.sprite = emoji;
+    }
+    private void EsperarPacienteAction()
+    {
+        PutEmoji(emoEsperarPaciente);
+        sala.libre = true;
+    }
+    private void CasaFinAction()
+    {
+        FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);
+        mundo.ReemplazarMedico(personaje.nombre);
+        Destroy(this.gameObject);
     }
     private void irPuestoTrabajoAction()
     {
@@ -143,7 +146,6 @@ public class Medico : MonoBehaviour
         //Coger referencia paciente
         if (targetPaciente.actual != null)
         {
-            //Debug.Log(myFSM.GetCurrentState().Name);
             paciente = targetPaciente.actual.GetComponent<Paciente>();
             paciente.reiniciarTimerMorir();
             enfermedad = paciente.enfermedad;
@@ -152,29 +154,9 @@ public class Medico : MonoBehaviour
         }
     }
 
-    //*private void despachandoPacienteAction()
-    //{
-    //    Debug.Log(myFSM.GetCurrentState().Name);
-    //    //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
-    //    if (paciente != null)
-    //    {
-            
-    //        if (paciente.pasoActual == Paso.Casa)
-    //        {
-    //            paciente.soyLeve.Fire();
-    //        }
-    //        else
-    //        {
-    //            mandarPacienteListaEspera();
-    //            paciente.todaviaTengoQueSerTratado.Fire();
-    //        }
-    //        sala.libre = true;
-    //        paciente = null;
-    //    }
-    //}*/
+
     private void despachandoPacienteAction()
     {
-        //Debug.Log(myFSM.GetCurrentState().Name);
         //Enviar paciente a casa/UCI/enfermería, según la enfermedad y el paso dentro de la misma, usando el método del paciente
         personaje.Hablando(false);
         if (paciente != null)
@@ -192,9 +174,8 @@ public class Medico : MonoBehaviour
                 mandarPacienteListaEspera();
                 paciente.todaviaTengoQueSerTratado.Fire();
             }
-            //sala.libre = true;
             paciente = null;
-            targetPaciente.ocupado = true;
+            targetPaciente.ocupable = true;
         }
     }
     private void mandarPacienteListaEspera()

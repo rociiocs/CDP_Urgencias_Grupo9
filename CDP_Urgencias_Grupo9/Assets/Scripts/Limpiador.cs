@@ -13,7 +13,7 @@ public class Limpiador : MonoBehaviour
     public bool ocupado = false; // o que este en la sala de limpiadores, esta pa que no de errores
     public bool jornadaFlag;
     public Sala salaLimpiando;
-    public int timeJornada = 2000;
+    public int timeJornada = 30;
 
     public Image emoticono;
     public Sprite emoLimpiando, emoCasa, emoConsultarPantalla;
@@ -43,20 +43,22 @@ public class Limpiador : MonoBehaviour
 
         //Create states
         casa = myFSM.CreateEntryState("casa");
-        casaFin = myFSM.CreateState("casaFin", () => { FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);mundo.ReemplazarLimpiador(personaje.nombre); Destroy(this.gameObject); });
+        casaFin = myFSM.CreateState("casaFin",CasaFinAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
         irPantalla = myFSM.CreateState("irPantalla", irPantallaAction);
         irSala = myFSM.CreateState("irSala", irSalaAction);
         irQuirofano = myFSM.CreateState("irQuirofano", irSalaAction);
-        esperandoConsultarPantalla = myFSM.CreateState("esperandoConsultarPantalla", () =>PutEmoji(emoConsultarPantalla));
-        consultandoPantalla = myFSM.CreateState("consultandoPantalla", () => PutEmoji(emoConsultarPantalla));
-        limpiandoQuirofano = myFSM.CreateState("limpiandoQuirofano", () => { PutEmoji(emoLimpiando); personaje.limpiando(true); });
-        limpiandoSala = myFSM.CreateState("limpiandoSala", () => { PutEmoji(emoLimpiando); personaje.limpiando(true); });
+        esperandoConsultarPantalla = myFSM.CreateState("esperandoConsultarPantalla", EsperandoConsultaPantallAction);
+        consultandoPantalla = myFSM.CreateState("consultandoPantalla",ConsultandoPantallaAction );
+        limpiandoQuirofano = myFSM.CreateState("limpiandoQuirofano", LimpiandoQuiroAction);
+        limpiandoSala = myFSM.CreateState("limpiandoSala", LimpiandoSalaAction);
+
+  
 
 
         //Create perceptions
         //Comienza jornada, ir hacia la pantalla
-        Perception comienzaJornada = myFSM.CreatePerception<ValuePerception>(() => jornadaFlag); //Mirar
+        Perception comienzaJornada = myFSM.CreatePerception<ValuePerception>(() => jornadaFlag); 
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si hay sala que limpiar, el limpiador se dirige a ella
@@ -93,7 +95,7 @@ public class Limpiador : MonoBehaviour
 
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         myFSM.Update();
@@ -121,7 +123,7 @@ public class Limpiador : MonoBehaviour
                 }
                 targetUrgencias = salaLimpiando.posicionLimpiador;
                 haySalaLimpiar.Fire();
-                //myFSM.Fire("hay sala limpiar");
+              
             }
 
         }else if (myFSM.GetCurrentState().Name.Equals(esperandoConsultarPantalla.Name))
@@ -150,6 +152,30 @@ public class Limpiador : MonoBehaviour
         }
     }
 
+    private void CasaFinAction()
+    {
+        FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);
+        mundo.ReemplazarLimpiador(personaje.nombre); 
+        Destroy(this.gameObject);
+    }
+    private void EsperandoConsultaPantallAction()
+    {
+        PutEmoji(emoConsultarPantalla);
+    }
+    private void ConsultandoPantallaAction()
+    {
+        PutEmoji(emoConsultarPantalla);
+    }
+    private void LimpiandoQuiroAction()
+    {
+        PutEmoji(emoLimpiando);
+        personaje.limpiando(true);
+    }
+    private void LimpiandoSalaAction()
+    {
+        PutEmoji(emoLimpiando);
+        personaje.limpiando(true);
+    }
     private void PutEmoji(Sprite emoji)
     {
         emoticono.sprite = emoji;
@@ -177,7 +203,6 @@ public class Limpiador : MonoBehaviour
                 break;
             }
         }
-       // targetUrgencias.libre = false;
         personaje.GoTo(targetUrgencias);
     }
 
