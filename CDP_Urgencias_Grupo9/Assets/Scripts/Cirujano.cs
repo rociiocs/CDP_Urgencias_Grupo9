@@ -48,7 +48,7 @@ public class Cirujano : MonoBehaviour
         casa = myFSM.CreateEntryState("casa");
         irPuestoTrabajo = myFSM.CreateState("irPuestoTrabajo", irPuestoTrabajoAction);
         irCasa = myFSM.CreateState("irCasa", irCasaAction);
-        esperarPaciente = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); sala.libre = true;  }); //Debug.Log(myFSM.GetCurrentState().Name);
+        esperarPaciente = myFSM.CreateState("esperarPaciente", () => { PutEmoji(emoEsperarPaciente); sala.libre = true;}); //Debug.Log(myFSM.GetCurrentState().Name);
         examinandoPaciente = myFSM.CreateState("examinandoPaciente", examinandoPacienteAction);
         operandoPaciente = myFSM.CreateState("operandoPaciente", operandoPacienteAction);
         llamarLimpiador = myFSM.CreateState("llamarLimpiador", llamarLimpiadorAction);
@@ -57,7 +57,7 @@ public class Cirujano : MonoBehaviour
 
         //Create perceptions
         //Si hay un paciente delante
-        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.ocupado);
+        Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
         //Si termina el tiempo de la jornada
         Perception terminadaJornada = myFSM.CreatePerception<TimerPerception>(timeJornada);
         //Si termina el tiempo de operar
@@ -147,6 +147,7 @@ public class Cirujano : MonoBehaviour
         personaje.Hablando(true);
         //Debug.Log(myFSM.GetCurrentState().Name);
         paciente = targetPaciente.actual.GetComponent<Paciente>();
+        paciente.reiniciarTimerMorir();
         //Coger referencia paciente
         enfermedad = paciente.enfermedad;
         //Do animacion examinar
@@ -163,19 +164,11 @@ public class Cirujano : MonoBehaviour
     private void llamarLimpiadorAction()
     {
         personaje.Hablando(false);
-        paciente.personaje.levantarseOperacion();
-        paciente.siguientePaso();
-        if (paciente.pasoActual== Paso.UCI)
-        {
-            paciente.myFSMVivo.Fire("acudir a la UCI");
-        }
-        else if (paciente.pasoActual == Paso.Casa)
-        {
-            paciente.myFSMVivo.Fire("acudir casa");
-        }
-        targetPaciente.ocupado = false;
+        targetPaciente.ocupado = true;
+        paciente.levantarseOperacion();
         mundo.SalaCirugiaSucia(sala);
         myFSM.Fire("llamado limpiador");
+        
     }
 
 

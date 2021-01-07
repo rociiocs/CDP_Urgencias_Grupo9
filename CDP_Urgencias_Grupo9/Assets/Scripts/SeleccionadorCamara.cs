@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class SeleccionadorCamara : MonoBehaviour
 {
@@ -105,5 +106,15 @@ public class SeleccionadorCamara : MonoBehaviour
                 ChangeCamera(0);
             }
         }
+    }
+
+    public void Salir()
+    {
+        Application.Quit();
+    }
+
+    public void RecargarEscena()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -75,11 +75,7 @@ public class Sala
                 }
             }
         }
-        
-     
         return false;
-
-
     }
     public void CirugiaRealizada()// el cirujano llamara al mundo
     {

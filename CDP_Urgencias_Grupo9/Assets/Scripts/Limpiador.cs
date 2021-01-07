@@ -18,7 +18,7 @@ public class Limpiador : MonoBehaviour
     public Image emoticono;
     public Sprite emoLimpiando, emoCasa, emoConsultarPantalla;
     //Maquina de estados
-    StateMachineEngine myFSM;
+    public StateMachineEngine myFSM;
 
     //Estados
     State casa;
@@ -162,6 +162,7 @@ public class Limpiador : MonoBehaviour
         {
             salaLimpiando.sucio = false;
             salaLimpiando.heLlamadoAlMundo = false;
+            salaLimpiando = null;
         }
         
         //Nav Mesh ir al target puesto
@@ -182,7 +183,6 @@ public class Limpiador : MonoBehaviour
 
     private void irSalaAction()
     {
-       
         personaje.GoTo(targetUrgencias);
     }
 
@@ -202,6 +202,19 @@ public class Limpiador : MonoBehaviour
     private void irCasaAction()
     {
         //Go to target casa
+        mundo.listaLimpiadores.Remove(this);
+        if(salaLimpiando!= null)
+        {
+            if(salaLimpiando.tipo == TipoSala.CIRUGIA)
+            {
+                mundo.SalaCirugiaSucia(salaLimpiando);
+            }
+            else
+            {
+                mundo.AddSalaSucia(salaLimpiando);
+            }
+            salaLimpiando = null;
+        }
         targetUrgencias.libre = true;
         jornadaFlag = false;
         personaje.GoTo(mundo.casa);

@@ -128,9 +128,9 @@ public class Enfermero : MonoBehaviour
  
     private void ExaminarPaciente()
     {
-
         personaje.Hablando(true);
         currentPaciente = asientoPaciente.actual.gameObject.GetComponent<Paciente>();
+        currentPaciente.reiniciarTimerMorir();
         Enfermedad current = currentPaciente.enfermedad;
         if (currentPaciente.tieneBote)
         {

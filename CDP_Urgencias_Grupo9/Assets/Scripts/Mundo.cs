@@ -53,7 +53,7 @@ public class Mundo: MonoBehaviour
     private int numEnfermeriaP = 6, numMedicoP = 4, numCirugiaP = 2;
     public int porcentajeUrgentes = 10;
     public int numEnfermeros = 3, numMedicos = 2, numCirujanos = 1, numCeladores = 2, numLimpiadores = 2;
-    public float umbral= 65, speedSuciedad=0.01f, limitePorcentaje = 100;
+    public float umbral= 65, speedSuciedad=0.05f, limitePorcentaje = 100;
     public TargetUrgencias[] targetMedico;
     public TargetUrgencias[] targetMedicoPaciente;
     public TargetUrgencias[] targetCirujano;
@@ -76,13 +76,14 @@ public class Mundo: MonoBehaviour
     public TargetUrgencias laboratorio;
     public TargetUrgencias casa;
     public TargetUrgencias casaPaciente;
+    public TargetUrgencias casaPacienteUrgente;
     public int nMuertes = 0, nRecuperados = 0, nUCI = 0;
     private int MAX_PACIENTES = 15;
     //private float spawnMaxTime = 15f;
     //private float spawnMinTime = 9f;
     private List<string> nombres = new List<string>{"Maria","Jose", "Dani", "Rocio", "Antonio", "Celtia", "Panumo", "Paco Pepe", "Josefina", "Antonella", "Uxia", "Ramon", "Byron", "Adrian","Tomas" };
-    private float spawnMaxTime = 0;
-    private float spawnMinTime = 9;
+    private float spawnMaxTime = 9;
+    private float spawnMinTime = 4;
     private int contPacientes = 0;
     public bool aforo;
     public int aforoMax = 4;
@@ -253,22 +254,28 @@ public class Mundo: MonoBehaviour
     {
         foreach (Sala s in salasLimpiables)
         {
-            if (s.OnUpdateMundo(umbral, limitePorcentaje, speedSuciedad))
+            if(s.tipo != TipoSala.CIRUGIA)
             {
-                salasSucias.Add(s);
+                if (s.OnUpdateMundo(umbral, limitePorcentaje, speedSuciedad))
+                {
+                    salasSucias.Add(s);
+                }
             }
         }
 
         cirugiasSucias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
         if (cirugiasSucias.Count != 0)
         {
-            for (int i = 0; i < targetLimpiadores.Length; i++)
+            foreach (Limpiador l in listaLimpiadores)
             {
-                if (!targetLimpiadores[i].libre)
+                if (l.myFSM != null)
                 {
-                    
-                    return;
+                    if (l.myFSM.GetCurrentState().Name.Equals("consultandoPantalla"))
+                    {
+                        return;
+                    }
                 }
+                
             }
 
             for (int i = 0; i < listaLimpiadores.Count; i++)
@@ -330,6 +337,8 @@ public class Mundo: MonoBehaviour
             Personaje nuevo = Instantiate(prefabLimpiador, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
             nuevo.nombre = "Limpiador " + i;
             sc.AnhadirProfesional(nuevo);
+            Limpiador limpiador = nuevo.GetComponent<Limpiador>();
+            listaLimpiadores.Add(limpiador);
         }
         for (int i = 0; i < numCirujanos; i++)
         {
@@ -351,6 +360,8 @@ public class Mundo: MonoBehaviour
         Personaje nuevo = Instantiate(prefabLimpiador, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
         nuevo.nombre = nombre;
         sc.AnhadirProfesional(nuevo);
+        Limpiador limpiador = nuevo.GetComponent<Limpiador>();
+        listaLimpiadores.Add(limpiador);
     }
     public void ReemplazarCelador(string nombre, Celador old)
     {
@@ -410,21 +421,20 @@ public class Mundo: MonoBehaviour
     {
         sala.sucio = true;
         sala.porcentajeSuciedad = 100;
+        salasSucias.Add(sala);
     }
     private void ComprobarLibre(List<Paciente> listaEspera, List<Sala> salas)
     {
       
         foreach (Sala s in salas)
         {
-           
             if (listaEspera.Count != 0)
             {
-                if (s.tipo == TipoSala.CIRUGIA)
-                {
-                    float i = 0;
-                }
                 if ((s.libre)&&(!s.posicionProfesional.libre) && (s.posicionPaciente.libre))
                 {
+                    if(s.tipo== TipoSala.CIRUGIA && s.sucio){
+                        break;
+                    }
                     Paciente llamado = listaEspera[0];
                     s.libre = false;
                     listaEspera.RemoveAt(0);
@@ -438,9 +448,6 @@ public class Mundo: MonoBehaviour
                     {
                         llamado.SalaAsignadaLibre.Fire();
                     }
-                       
-
-                    
                     //deberia decrile con un valor o un fire que ha sido llamado?
                 }
             }
@@ -470,12 +477,21 @@ public class Mundo: MonoBehaviour
             yield return new WaitForSeconds(time);
             yield return new WaitUntil(()=>contPacientes < MAX_PACIENTES);
             contPacientes++;
-            Paciente nuevo= Instantiate(prefabPaciente, casaPaciente.transform.position,Quaternion.identity).GetComponent<Paciente>();
+            int esUrgente = (int)Random.Range(0, 100);
+            Paciente nuevo;
+            if(esUrgente < porcentajeUrgentes){
+                 nuevo = Instantiate(prefabPaciente, casaPacienteUrgente.transform.position, Quaternion.identity).GetComponent<Paciente>();
+            }
+            else
+            {
+                nuevo = Instantiate(prefabPaciente, casaPaciente.transform.position, Quaternion.identity).GetComponent<Paciente>();
+            }
+            
             string nombre = nombres[0];
             nombres.RemoveAt(0);
             nuevo.GetComponent<Personaje>().nombre = nombre;
             sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
-            int esUrgente = (int)Random.Range(0, 100);
+            
             int enfermedad;
             Enfermedad aux;
             if (esUrgente < porcentajeUrgentes)

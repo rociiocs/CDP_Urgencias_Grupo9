@@ -145,6 +145,7 @@ public class Medico : MonoBehaviour
         {
             //Debug.Log(myFSM.GetCurrentState().Name);
             paciente = targetPaciente.actual.GetComponent<Paciente>();
+            paciente.reiniciarTimerMorir();
             enfermedad = paciente.enfermedad;
             PutEmoji(emoExaminar);
             paciente.siguientePaso();
