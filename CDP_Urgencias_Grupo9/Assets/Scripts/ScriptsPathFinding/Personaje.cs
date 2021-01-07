@@ -32,7 +32,7 @@ public class Personaje: MonoBehaviour
         if (targetU != null)
         {
             targetU.libre = true;
-            targetU.ocupado = true;
+            targetU.ocupado = true;//?????? quizas hay que cambiarlo
         }
         targetU = targetUrgencias;
         if (targetU == null)

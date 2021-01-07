@@ -308,6 +308,7 @@ public class Mundo: MonoBehaviour
             prefabCelador.GetComponent<Celador>().turnoSala = !prefabCelador.GetComponent<Celador>().turnoSala;
             Personaje nuevo = Instantiate(prefabCelador, casa.transform.position,Quaternion.identity).GetComponent<Personaje>();
             nuevo.nombre = "Celador " + i;
+           
             sc.AnhadirProfesional(nuevo);
            
         }
@@ -351,10 +352,13 @@ public class Mundo: MonoBehaviour
         nuevo.nombre = nombre;
         sc.AnhadirProfesional(nuevo);
     }
-    public void ReemplazarCelador(string nombre)
+    public void ReemplazarCelador(string nombre, Celador old)
     {
         Personaje nuevo = Instantiate(prefabCelador, casa.transform.position, Quaternion.identity).GetComponent<Personaje>();
         nuevo.nombre = nombre;
+        Celador c = nuevo.GetComponent<Celador>();
+        c.turnoSala = old.turnoSala;
+       
         sc.AnhadirProfesional(nuevo);
     }
     public void ReemplazarMedico(string nombre)

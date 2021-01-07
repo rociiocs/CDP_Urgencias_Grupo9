@@ -57,6 +57,7 @@ public class Medico : MonoBehaviour
         //Create perceptions
         //Si hay un paciente delante
         Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => !targetPaciente.ocupado);
+       // Perception pacienteAtender = myFSM.CreatePerception<ValuePerception>(() => targetPaciente.actual!=null);
         //Si hay un paciente delante
         Perception terminarDespachar = myFSM.CreatePerception<TimerPerception>(timeDespachar);//puede que sea value si se usa animación
         //Si termina el tiempo de la jornada
@@ -97,7 +98,9 @@ public class Medico : MonoBehaviour
                     sala = oficinas[i];
                     targetUrgencias = sala.posicionProfesional;
                     targetPaciente = sala.posicionPaciente;
-                    targetPaciente.ocupado = true;
+                    
+                    if(targetPaciente.actual==null)
+                        targetPaciente.ocupado = true;
                     myFSM.Fire("comienza jornada");
                     
                     return;

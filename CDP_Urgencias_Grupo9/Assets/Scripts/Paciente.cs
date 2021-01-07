@@ -244,7 +244,7 @@ public class Paciente : MonoBehaviour
 
         todaviaTengoQueSerTratado = myFSMVivo.CreatePerception<PushPerception>();
         Perception animacionMuerto = myFSM.CreatePerception<TimerPerception>(timerAnimacionMorir);
-        Perception hayCelador = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado && !mundo.targetEsperaMostrador[targetUrgenciasID].libre);
+        Perception hayCelador = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado); /*&& !mundo.targetEsperaMostrador[targetUrgenciasID].libre);*/
         Perception noHayCelador = myFSMVivo.CreatePerception<ValuePerception>(() => personaje.haLlegado && mundo.targetEsperaMostrador[targetUrgenciasID].libre);
         Perception tengoQueHacerCola = myFSMVivo.CreatePerception<PushPerception>();
         //El profesional hace push para que vuelvas a sala de espera
@@ -291,7 +291,7 @@ public class Paciente : MonoBehaviour
         myFSMColaDentro.CreateTransition("he avanzado", avanzandoColaDentro, heAvanzadoDentro, esperandoColaDentro);
         myFSMColaDentro.CreateExitTransition("hay mostrador libre", esperandoColaDentro, hayMostradorLibre, llegadaMostrador);
         myFSMVivo.CreateTransition("llegada a mostrador", llegadaMostrador, hayCelador, siendoAtendidoCelador);
-        myFSMVivo.CreateTransition("llegada a mostrador no hay celador", llegadaMostrador, noHayCelador, esperarCelador);
+        //myFSMVivo.CreateTransition("llegada a mostrador no hay celador", llegadaMostrador, noHayCelador, esperarCelador);
         myFSMVivo.CreateTransition("llegada a mostrador tras cambiar mostrador", esperarCelador, hayCelador, llegadaMostrador);
         myFSMVivo.CreateTransition("tengo que hacer cola", esperarCelador, tengoQueHacerCola,haciendoColaDentro);
         myFSMVivo.CreateTransition("esperando sala", siendoAtendidoCeladorMostrador, heSidoAtendido, esperandoSalaEspera);
@@ -538,7 +538,7 @@ public class Paciente : MonoBehaviour
         //Debug.Log("hay mostrador libre");
         for(int i=0; i< mundo.targetMostradorPaciente.Length; i++)
         {
-            if ((mundo.targetMostradorPaciente[i].ocupado)&&(mundo.targetMostradorPaciente[i].libre))
+            if ((mundo.targetMostradorPaciente[i].ocupado) && (mundo.targetMostradorPaciente[i].libre))
             {
                 mundo.targetMostradorPaciente[i].libre = false;
                 mundo.targetMostradorPaciente[i].actual = personaje;
@@ -548,6 +548,8 @@ public class Paciente : MonoBehaviour
                 GoTo(targetUrgencias);
                 return true;
             }
+
+
         }
         return false;
     }
