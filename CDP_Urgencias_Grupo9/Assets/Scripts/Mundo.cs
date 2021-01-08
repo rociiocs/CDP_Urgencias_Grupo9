@@ -109,6 +109,7 @@ public class Mundo : MonoBehaviour
             nueva.posicionPaciente = targetEnfermeriaPaciente[i];
             nueva.posicionProfesional = targetEnfermeria[i];
             nueva.posicionLimpiador = targetLimpiadoresSala[ID];
+            nueva.idBanho = i;
             salas.Add(nueva);
             if (i % 2 != 0)//impares
             {
@@ -297,6 +298,7 @@ public class Mundo : MonoBehaviour
         cirugiasSucias = salasSucias.FindAll((s) => s.tipo.Equals(TipoSala.CIRUGIA));
         if (cirugiasSucias.Count != 0)
         {
+            listaLimpiadores.RemoveAll((l) => l == null);
             foreach (Limpiador l in listaLimpiadores)
             {
                 if (l.myFSM != null)
@@ -353,7 +355,6 @@ public class Mundo : MonoBehaviour
         for (int i = 0; i < numEnfermeros; i++)
         {
             Enfermero nuevo = Instantiate(prefabEnfermero, casa.transform.position, Quaternion.identity).GetComponent<Enfermero>();
-            nuevo.banhoTarget = banhos[i];
             nuevo.gameObject.GetComponent<Personaje>().nombre = "Enfermero " + i;
             sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
         }
@@ -379,10 +380,10 @@ public class Mundo : MonoBehaviour
         }
         StartCoroutine(SpawnPacientes());
     }
-    public void ReemplazarEnfermero(TargetUrgencias banho, string nombre)
+    public void ReemplazarEnfermero( string nombre)
     {
         Enfermero nuevo = Instantiate(prefabEnfermero, casa.transform.position, Quaternion.identity).GetComponent<Enfermero>();
-        nuevo.banhoTarget = banho;
+     
         nuevo.GetComponent<Personaje>().nombre = nombre;
         sc.AnhadirProfesional(nuevo.GetComponent<Personaje>());
     }

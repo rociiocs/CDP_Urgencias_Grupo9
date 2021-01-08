@@ -16,7 +16,7 @@ public class Limpiador : MonoBehaviour
     public int timeJornada = 30;
 
     public Image emoticono;
-    public Sprite emoLimpiando, emoCasa, emoConsultarPantalla;
+    public Sprite emoLimpiando, emoCasa, emoConsultarPantalla,emoAndar;
     //Maquina de estados
     public StateMachineEngine myFSM;
 
@@ -32,7 +32,7 @@ public class Limpiador : MonoBehaviour
     State limpiandoQuirofano;
     State limpiandoSala;
     Perception haySalaLimpiar;
-
+    Perception hayQuirofanoLimpiar;
     // Start is called before the first frame update
     void Start()
     {
@@ -64,7 +64,7 @@ public class Limpiador : MonoBehaviour
         //Si hay sala que limpiar, el limpiador se dirige a ella
         haySalaLimpiar = myFSM.CreatePerception<PushPerception>();
         //Si hay un quirofano que limpiar
-        Perception hayQuirofanoLimpiar = myFSM.CreatePerception<PushPerception>();
+         hayQuirofanoLimpiar = myFSM.CreatePerception<PushPerception>();
         //Si hay un quirofano que limpiar urgente, el mundo llama al limpiador
         Perception salaLimpia = myFSM.CreatePerception<ValuePerception>(() => salaLimpiando.porcentajeSuciedad < 0);
         //Se da la percepción desde el update, comprobando si está en la posición correcta
@@ -85,11 +85,13 @@ public class Limpiador : MonoBehaviour
         myFSM.CreateTransition("hay sala limpiar", consultandoPantalla, haySalaLimpiar, irSala);
         myFSM.CreateTransition("hay quirofano limpiar", consultandoPantalla, hayQuirofanoLimpiar, irQuirofano);
         myFSM.CreateTransition("llegada a sala", irSala, llegadaPuesto, limpiandoSala);
+        myFSM.CreateTransition("hay quirofano mientras ando", irSala, hayQuirofanoLimpiar, irQuirofano);
         myFSM.CreateTransition("llegada a quirofano", irQuirofano, llegadaPuesto, limpiandoQuirofano);
         myFSM.CreateTransition("limpia sala", limpiandoSala, salaLimpia, irPantalla);
         myFSM.CreateTransition("limpia quirofano", limpiandoQuirofano, salaLimpia, irPantalla);
         myFSM.CreateTransition("hay quirofano urgente", limpiandoSala, hayQuirofanoLimpiar, irQuirofano);
         myFSM.CreateTransition("termina jornada", consultandoPantalla, terminadaJornada, irCasa);
+        myFSM.CreateTransition("casa desde ir a pantalla", irPantalla, terminadaJornada, irCasa);
         myFSM.CreateTransition("termina jornada esperar", esperandoConsultarPantalla, terminadaJornada, irCasa);
         myFSM.CreateTransition("llegada casa", irCasa, llegadaCasa, casaFin);
 
@@ -111,7 +113,7 @@ public class Limpiador : MonoBehaviour
                     targetUrgencias.libre = true;
                 }
                 targetUrgencias = salaLimpiando.posicionLimpiador;
-                myFSM.Fire("hay quirofano limpiar");
+                hayQuirofanoLimpiar.Fire();
 
             }else if(mundo.salasSucias.Count > 0)
             {
@@ -184,6 +186,7 @@ public class Limpiador : MonoBehaviour
     private void irPantallaAction()
     {
         personaje.limpiando(false);
+        PutEmoji(emoAndar);
         if (salaLimpiando!= null)
         {
             salaLimpiando.sucio = false;
@@ -208,6 +211,8 @@ public class Limpiador : MonoBehaviour
 
     private void irSalaAction()
     {
+        personaje.limpiando(false);
+        PutEmoji(emoAndar);
         personaje.GoTo(targetUrgencias);
     }
 
@@ -221,7 +226,7 @@ public class Limpiador : MonoBehaviour
         salaLimpiando = mundo.cirugiasSucias[0];
         mundo.salasSucias.Remove(salaLimpiando);
         targetUrgencias = salaLimpiando.posicionLimpiador;
-        myFSM.Fire("hay quirofano urgente");
+        hayQuirofanoLimpiar.Fire();
     }
 
     private void irCasaAction()

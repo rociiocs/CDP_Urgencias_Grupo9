@@ -1,0 +1,205 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &316055228734140076
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 316055228734140074}
+  - component: {fileID: 316055228734140075}
+  m_Layer: 0
+  m_Name: MUNDO 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &316055228734140074
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316055228734140076}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -12.184501, y: -0.95339966, z: -12.18951}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &316055228734140075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316055228734140076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ba86dfef60ff4a4ea9a415a23e396e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabEnfermero: {fileID: 2673144395125744764, guid: 48846c5b86a08984ab24ee2a958b2935,
+    type: 3}
+  prefabPaciente: {fileID: 4001187943032256902, guid: cdd42e0f701ea6c47a64ef271dd49fca,
+    type: 3}
+  prefabMedico: {fileID: 5741734046103210372, guid: 09f680d71efd893409f7cc830fa5ea0d,
+    type: 3}
+  prefabCelador: {fileID: 7118007573415231425, guid: 86d5d6c2d6940314fb8816f6a5035341,
+    type: 3}
+  prefabCirujano: {fileID: 7182454348809693951, guid: be3c710c4b1111945bb3b691d7afcbf4,
+    type: 3}
+  prefabLimpiador: {fileID: 7629224141682134966, guid: 48a49694c9d0ded498d294252f4e75d8,
+    type: 3}
+  otroPaciente: {fileID: 2100000, guid: 2fd41394d106a9943a3dffa329860aa3, type: 2}
+  numMuertosText: {fileID: 0}
+  nRecuperadosText: {fileID: 0}
+  nUCIText: {fileID: 0}
+  PantallaLlamados: {fileID: 0}
+  PantallaLimpiadores: {fileID: 0}
+  emoticonoEnfermedad:
+  - {fileID: 21300000, guid: 2d5de62763223214088c7965a17c3622, type: 3}
+  - {fileID: 21300000, guid: 202de21ceaa81b748b5bed41b611ff5f, type: 3}
+  - {fileID: 21300000, guid: f955b4b7c1e97b2409b996167e9322b8, type: 3}
+  - {fileID: 21300000, guid: 65293937d082c33489ffed6d0101dc15, type: 3}
+  - {fileID: 21300000, guid: bfd96420098781d42a722e900fb2e4f4, type: 3}
+  - {fileID: 21300000, guid: 2b5cb1c61451820458015fe338276d4e, type: 3}
+  - {fileID: 21300000, guid: 11c1839c5e0921345bf1ed62b471bbf7, type: 3}
+  - {fileID: 21300000, guid: 2e18d1a479536b34a8b0856b7f61f95a, type: 3}
+  - {fileID: 21300000, guid: f064c8f56d0b33c41bc74d6c80af7f1d, type: 3}
+  - {fileID: 21300000, guid: 6f686bed970248346a45a7e23642f76f, type: 3}
+  - {fileID: 21300000, guid: b74ae751dfd309c4c9477e18cecd3fcd, type: 3}
+  - {fileID: 21300000, guid: 43bbdb89df3596843a3f30e9e9d88b43, type: 3}
+  listaEsperaEnfermeria: []
+  listaEsperaMedico: []
+  listaEsperaCirugia: []
+  listaLimpiadores:
+  - {fileID: 0}
+  - {fileID: 0}
+  porcentajeUrgentes: 10
+  numEnfermeros: 3
+  numMedicos: 2
+  numCirujanos: 1
+  numCeladores: 2
+  numLimpiadores: 2
+  umbral: 65
+  speedSuciedad: 0.05
+  limitePorcentaje: 100
+  targetMedico:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetMedicoPaciente:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetCirujano:
+  - {fileID: 0}
+  - {fileID: 0}
+  targetCirujanoPaciente:
+  - {fileID: 0}
+  - {fileID: 0}
+  targetEnfermeria:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetEnfermeriaPaciente:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetLimpiadores:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetLimpiadoresSala:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetEsperaMostrador:
+  - {fileID: 0}
+  - {fileID: 0}
+  targetEsperaSala:
+  - {fileID: 0}
+  targetMostradorPaciente:
+  - {fileID: 0}
+  - {fileID: 0}
+  targetSalaPaciente:
+  - {fileID: 0}
+  targetColaDentro:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetColaFuera:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetColaUrgentes:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  asientos:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  dePie:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  banhos:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  laboratorio: {fileID: 0}
+  casa: {fileID: 0}
+  casaPaciente: {fileID: 0}
+  casaPacienteUrgente: {fileID: 0}
+  nMuertes: 0
+  nRecuperados: 0
+  nUCI: 0
+  aforo: 0
+  aforoMax: 50

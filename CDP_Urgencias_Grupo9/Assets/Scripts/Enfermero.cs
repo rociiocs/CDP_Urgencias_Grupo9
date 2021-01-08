@@ -106,6 +106,7 @@ public class Enfermero : MonoBehaviour
     {
         personaje.Hablando(false);
         PutEmoji(emoEsperandoOrina);
+        sala.libre = false;
         currentPaciente.targetBanho = banhoTarget;
         currentPaciente.tengoQueHacerAnalisisOrina.Fire();
     }
@@ -119,7 +120,7 @@ public class Enfermero : MonoBehaviour
     private void CasaFinAction()
     {
         FindObjectOfType<SeleccionadorCamara>().EliminarProfesional(personaje);
-        mundo.ReemplazarEnfermero(banhoTarget, personaje.nombre);
+        mundo.ReemplazarEnfermero( personaje.nombre);
         Destroy(gameObject);
     }
     private void IrPuestoAction()
@@ -273,6 +274,7 @@ public class Enfermero : MonoBehaviour
                     
                     puestoTrabajo = enfermeria[i].posicionProfesional;
                     asientoPaciente = enfermeria[i].posicionPaciente;
+                    banhoTarget = mundo.banhos[sala.idBanho];
                     if(asientoPaciente.ocupable==null)
                         asientoPaciente.ocupable = true;
                     jornadaFlag = true;
